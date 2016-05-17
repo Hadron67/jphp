@@ -1,0 +1,1074 @@
+options{
+    STATIC = false;
+    UNICODE_INPUT=true;
+}
+PARSER_BEGIN(JZendParser)
+
+package com.hadroncfy.jphp.jzend.compile;
+
+import java.util.Stack;
+
+
+public class JZendParser{
+    private Compiler cp = null;
+    private int[] state_stack = new int[10];
+    private int sp = 0;
+    private boolean in_string = false;
+    private Stack<ZNode> node_stack = new Stack<ZNode>();
+    public enum BinaryOptrPriorities{
+        OR,
+        AND,
+        XOR,
+        BITOR,
+        BITAND,
+        BITXOR,
+        CONCAT,
+        EQU,
+        MT,
+        SHIFT,
+        PLUS,
+        TIMES,
+        MOD
+    }
+    public void Parse() throws TokenMgrError,ParseException,CompilationException{
+        this.TopStatementList();
+        cp.finishCompiling();
+    }
+    public void setCompiler(Compiler c){
+        this.cp = c;
+    }
+    private void PushState(int t){
+        token_source.SwitchTo(t);
+        state_stack[sp++] = t;
+    }
+    private void PopState(){
+        token_source.SwitchTo(state_stack[--sp]);
+    }
+    private boolean IsEmpty(){
+        return sp == 0;
+    }
+    private void SwitchTo(int a){
+        token_source.SwitchTo(a);
+    }
+    private void P(ZNode n){
+        node_stack.push(n);
+    }
+    private ZNode $(){
+        return node_stack.pop();
+    }
+    private ZNode $(int i){
+        return node_stack.get(node_stack.size() - i - 1);
+    }
+    protected static int getBinaryOptrPriority(int t){
+        switch(t){
+            case OR: return BinaryOptrPriorities.OR.ordinal();
+            case AND: return BinaryOptrPriorities.AND.ordinal();
+            case XOR: return BinaryOptrPriorities.XOR.ordinal();
+            case BITOR: return BinaryOptrPriorities.BITOR.ordinal();
+            case BITAND: return BinaryOptrPriorities.BITAND.ordinal();
+            case BITXOR: return BinaryOptrPriorities.BITXOR.ordinal();
+            case CONCAT: return BinaryOptrPriorities.CONCAT.ordinal();
+            case MT:
+            case LT:
+            case MTOE:
+            case LTOE: return BinaryOptrPriorities.MT.ordinal();
+            case EQU:
+            case NEQU:
+            case IDENTICAL:
+            case NIDENTICAL: return BinaryOptrPriorities.EQU.ordinal();
+            case PLUS:
+            case MINUS: return BinaryOptrPriorities.PLUS.ordinal();
+            case TIMES:
+            case DIVIDE: return BinaryOptrPriorities.TIMES.ordinal();
+            case MOD: return BinaryOptrPriorities.MOD.ordinal();
+            default: throw new RuntimeException("unknown operator:" + t);
+        }
+    }
+}
+
+PARSER_END(JZendParser)
+
+<IN_SCRIPTING>
+SKIP: {"\n"|"\r"|"\r\n"|"\t"|" "}
+
+<DEFAULT>
+SPECIAL_TOKEN:{
+    < "<?php" > : IN_SCRIPTING
+}
+
+<DEFAULT>
+TOKEN: {
+    <INLINEHTML:(~[])>
+}
+
+<IN_LINECOMMENT>
+SPECIAL_TOKEN: {
+    <"\n"|"\r\n"> : IN_SCRIPTING
+    | <"?>"> : DEFAULT
+}
+
+<IN_BLOCKCOMMENT>
+SPECIAL_TOKEN: {
+    <"*/"> : IN_SCRIPTING
+}
+
+<IN_LINECOMMENT,IN_BLOCKCOMMENT>
+MORE: {
+    <~[]>
+}
+
+<IN_DOUBLE_QUOTES,IN_BACK_QUOTES,IN_HEREDOC>
+TOKEN: {
+    <ARRAY_IN_STRING: "$" <NAME> "[" > { matchedToken.image = image.deleteCharAt(0).deleteCharAt(image.length() - 1).toString(); }
+    | <PROPERTY_IN_STRING: "$" <NAME> "->" <NAME> >
+    | <VARIABLE_IN_STRING: "$" <NAME> > { matchedToken.image = image.deleteCharAt(0).toString(); }
+    | <VARVARIABLE_IN_STRING: "${">
+    | <EXPR_IN_STRING: "{$">
+    | <OTHERS_IN_STRING3: ["{","$"]> { matchedToken.kind = OTHERS_IN_STRING; }
+}
+
+<IN_SINGLE_QUOTES>
+TOKEN: {
+    <PSTRING: <SINGLE_QUOTES> > { matchedToken.image = image.deleteCharAt(image.length() - 1).toString(); } : IN_SCRIPTING
+}
+
+<IN_DOUBLE_QUOTES>
+TOKEN: {
+    <END_OF_STRING: <DOUBLE_QUOTES> > { matchedToken.kind = END_OF_STRING; } : IN_SCRIPTING
+    | <OTHERS_IN_STRING: (~["{","$","\""]|"\\" ~[])+>
+}
+
+<IN_BACK_QUOTES>
+TOKEN: {
+    <END_OF_STRING2: <BACK_QUOTES> > { matchedToken.kind = END_OF_STRING; } : IN_SCRIPTING
+    | <OTHERS_IN_STRING2: (~["{","$","`"]|"\\" ~[])+> { matchedToken.kind = OTHERS_IN_STRING; }
+}
+
+<IN_HEREDOC>
+TOKEN: {
+    <NAME_IN_HEREDOC: <NAME> >
+    | <OTHERS_IN_HEREDOC: (~["a"-"z","A"-"Z","_","{","$"]|"\\" ~[])+ > { matchedToken.kind = OTHERS_IN_STRING; }
+}
+
+<IN_SINGLE_QUOTES,IN_BACK_QUOTES>
+MORE: {
+    <"\\" ~[]>
+    | <~["\\"]>
+}
+
+<LOOKING_FOR_PROPERTY>
+SPECIAL_TOKEN: {
+    < [" ","\n","\r"]|"\r\n" >
+}
+
+<LOOKING_FOR_PROPERTY>
+TOKEN: {
+    <MEMBERNAME: <NAME> > : IN_SCRIPTING
+    | <VARIABLE2: "$" <NAME> > { matchedToken.image = image.deleteCharAt(0).toString();matchedToken.kind = VARIABLE; } : IN_SCRIPTING
+    | <DOLLAR2: "$"> { matchedToken.kind = DOLLAR; } : IN_SCRIPTING
+    | <LBBRACKET2 : "{"> { matchedToken.kind = LBBRACKET; } : IN_SCRIPTING
+}
+
+<LOOKING_FOR_PROPERTY>
+SPECIAL_TOKEN: {
+    < <DOUBLE_QUOTES> > : IN_DOUBLE_QUOTES
+    | < <SINGLE_QUOTES> > : IN_SINGLE_QUOTES
+}
+
+<IN_SCRIPTING>
+SPECIAL_TOKEN: {
+    <"//"|"#"> : IN_LINECOMMENT
+    | <"/*"> : IN_BLOCKCOMMENT
+    | < <SINGLE_QUOTES> > : IN_SINGLE_QUOTES
+    | <#DOUBLE_QUOTES : "\"">
+    | <#SINGLE_QUOTES : "'">
+    | <#BACK_QUOTES: "`">
+}
+
+<IN_SCRIPTING>
+TOKEN: {
+    < BEGIN_OF_SSTRING: <DOUBLE_QUOTES> > : IN_DOUBLE_QUOTES
+    | < BEGIN_OF_DSTRING: <BACK_QUOTES> > { matchedToken.kind = BEGIN_OF_SSTRING; } : IN_BACK_QUOTES
+    | <EOS: "?>"> : DEFAULT
+    | <HEREDOC_ENTRY: "<<<">
+    | <EAR: "?">
+    | <EOL: ";">
+    | <CAMMA: ",">
+    | <SLICE: ":">
+    | <PLUS: "+">
+    | <MINUS: "-">
+    | <INC: "++">
+    | <DEC: "--">
+    | <TIMES: "*">
+    | <DIVIDE: "/">
+    | <CONCAT: ".">
+    | <MOD: "%">
+    | <ASSIGN: "=">
+    | <ASSIGNPLUS: "+=">
+    | <ASSIGNMINUS: "-=">
+    | <ASSIGNTIMES: "*=">
+    | <ASSIGNDIVIDE: "/=">
+    | <ASSIGNMOD: "%=">
+    | <ASSIGNCONCAT: ".=">
+    | <ASSIGNBITAND: "&=">
+    | <ASSIGNBITOR: "|=">
+    | <ASSIGNBITXOR: "^=">
+    | <ASSIGNLSHIFT: "<<=">
+    | <ASSIGNRSHIFT: ">>=">
+    | <MT: ">">
+    | <LT: "<">
+    | <MTOE: ">=">
+    | <LTOE: "<=">
+    | <EQU: "==">
+    | <NEQU: "!=">
+    | <IDENTICAL: "===">
+    | <NIDENTICAL: "!=="|"<>">
+    | <AND: "&&"|"and">
+    | <OR: "||"|"or">
+    | <XOR: "xor">
+    | <NOT: "!">
+    | <BITAND: "&">
+    | <BITOR: "|">
+    | <BITXOR: "^">
+    | <BITNOT: "~">
+    | <LSHIFT: "<<">
+    | <RSHIFT: ">>">
+    | <LBRACKET: "(">
+    | <RBRACKET: ")">
+    | <LCBRACKET: "[">
+    | <RCBRACKET: "]">
+    | <LBBRACKET: "{">
+    | <RBBRACKET: "}">
+    | <ARROW: "->"> : LOOKING_FOR_PROPERTY
+    | <DOUBLESLICE: "::">
+    | <DOUBLEARROW: "=>">
+    | <INSTANCEOF: "instanceof">
+    | <NSSEPERATOR: "\\">
+}
+
+<IN_SCRIPTING>
+TOKEN: {
+    <INT: "int"|"integer" >
+    | <FLOAT: "real"|"float"|"double" >
+    | <STRING: "string"|"binary" >
+    | <ARRAY: "array" >
+    | <OBJECT: "object" >
+    | <BOOL: "bool"|"boolean" >
+    | <UNSET: "unset" >
+}
+
+<IN_SCRIPTING>
+TOKEN: {
+    <ECHO: "echo">
+    | <CONST: "const">
+    | <GOTO: "goto">
+    | <IF: "if">
+    | <ELSEIF: "elseif">
+    | <ELSE: "else">
+    | <ENDIF: "endif">
+    | <WHILE: "while">
+    | <DO : "do">
+    | <ENDWHILE: "endwhile">
+    | <FOR: "for">
+    | <ENDFOR: "endfor">
+    | <FOREACH: "foreach">
+    | <ENDFOREACH: "endforeach">
+    | <SWITCH: "switch">
+    | <CASE: "case">
+    | <DEFAULTL: "default">
+    | <BREAK: "break">
+    | <CONTINUE: "continue">
+    | <ENDSWITCH: "endswitch">
+    | <EMPTY: "empty">
+    | <INCLUDE: "include">
+    | <INCLUDE_ONCE: "include_once">
+    | <REQUIRE: "require">
+    | <REQUIRE_ONCE: "require_once">
+    | <EVAL: "eval">
+    | <ISSET: "isset">
+    | <AS: "as">
+    | <STATIC: "static">
+    | <GLOBAL: "global">
+    | <NEW: "new">
+    | <CLONE: "clone">
+    | <FUNCTION: "function">
+    | <USE: "use">
+    | <CALLABLE: "callable">
+    | <RETURN: "return">
+    | <SILENT: "@">
+    | <PRINT: "print">
+    | <LIST: "list">
+    | <EXIT: "exit"|"die">
+    | <THROW: "throw">
+    | <NAMESPACE: "namespace">
+    | <HALT_COMPILER: "__halt_compiler">
+    | <TRY: "try">
+    | <CATCH: "catch">
+    | <VAR: "var">
+    //point important !!!
+    | <CLASS: "class">
+    | <EXTENDS: "extends">
+    | <INTERFACE: "interface">
+    | <IMPLEMENTS: "implements">
+    | <FINAL: "final">
+    | <ABSTRACT: "abstract">
+    | <TRAIT: "trait">
+    | <PUBLIC: "public">
+    | <PROTECTED: "protected">
+    | <PRIVATE: "private">
+    | <INSTEADOF: "insteadof">
+    | <DECLARE: "declare">
+    | <ENDDECLARE: "enddeclare">
+    //constants
+    | <CLASS_C: "__CLASS__">
+    | <TRAIT_C: "__TRAIT">
+    | <FUNCTION_C: "__FUNCTION__">
+    | <METHOD_C: "__METHOD__">
+    | <LINE_C: "__LINE__">
+    | <FILE_C: "__FILE">
+    | <DIR_C: "__DIR__">
+    | <NAMESPACE_C: "__NAMESPACE__">
+}
+
+<IN_SCRIPTING>
+TOKEN :
+{
+    <IDENTIFIER: <NAME> >
+    | <VARIABLE: "$" <NAME> > { matchedToken.image = image.deleteCharAt(0).toString(); }
+    | <DOLLAR: "$">
+    | <#NAME: ["a"-"z","A"-"Z","_"] (["a"-"z","A"-"Z","_","0"-"9"])*>
+    | <#LETTER: [ "a"-"z", "A"-"Z" ] >
+    | <#DIGIT: [ "0"-"9"] >
+    | <NOMBRE: ((<DIGIT>)+ ("." (<DIGIT>)*)?)|(<DIGIT>)* "." (<DIGIT>)+ >
+//    | <SSTRING: "\"" ( ~["\""]|("\\" ~[] ) )* "\"" >
+//    | <PSTRING: "'" ( ~["'"]|("\\" ~[]) )* "'" >
+}
+
+
+void TopStatementList()throws CompilationException:{}{
+    ( TopStatement() )*
+}
+void TopStatement()throws CompilationException:{
+    boolean t;
+}{
+    LOOKAHEAD(3) FunctionDeclaration()
+    | LOOKAHEAD(3) ClassDeclaration()
+    | <HALT_COMPILER> <LBRACKET> <RBRACKET> EOL()
+    | LOOKAHEAD(2) <NAMESPACE>
+    (
+        ( NameSpaceName() { cp.DoEnterNameSpace($().data); } (
+            <EOL>
+            | <LBBRACKET> TopStatementList() <RBBRACKET> { cp.DoLeaveNameSpace(); }
+        )
+    ) | <LBBRACKET> TopStatementList() <RBBRACKET> )
+    | <USE> UseList() <EOL>
+    | Statement()
+
+}
+void UseList()throws CompilationException:{}{
+    UseListItem() ( <CAMMA> UseListItem() )*
+}
+void UseListItem()throws CompilationException:{
+    Token t;
+}{
+    NameSpaceName() [ <AS> t = <IDENTIFIER> {  } ]
+    | <NSSEPERATOR> NameSpaceName() [ <AS> t = <IDENTIFIER> {  } ]
+}
+void Statement()throws CompilationException:{}{
+    ConstDeclaration()
+    | UntickedStatement()
+}
+void ConstDeclaration()throws CompilationException :{
+    Token t;
+}{
+    <CONST> ConstDeclarationItem() (<CAMMA> ConstDeclarationItem() )* EOL()
+}
+void ConstDeclarationItem()throws CompilationException:{
+    Token t;
+}{
+    t = <IDENTIFIER> {  } <ASSIGN> Expr()
+}
+void UntickedStatement()throws CompilationException :{
+    Token t;
+}{
+    <LBBRACKET> InnerStatementList() <RBBRACKET>
+    | EOL()
+    | LOOKAHEAD (2) InlineHTML() { cp.DoEcho(); }
+    | LOOKAHEAD( <IDENTIFIER> <SLICE> ) t = <IDENTIFIER> <SLICE> {  }
+    | <GOTO> t = <IDENTIFIER> EOL() {  }
+    | <RETURN> (
+        Expr() EOL()
+        | EOL() )
+    | <THROW> Expr() EOL()
+    | Unset()
+    | GlobalDeclarations()
+    | LOOKAHEAD(2) StaticDeclarations()
+    | EchoStatement()
+    | IfStatement()
+    | WhileStatement()
+    | DoWhileStatement()
+    | ForStatement()
+    | SwitchStatement()
+    | ForEachStatement()
+    | TryCatchStatement()
+    | DeclareStatement()
+    | <BREAK> ( EOL() { cp.DoBreakOrContinue(0,false); } | Expr() EOL() { cp.DoBreakOrContinue(0,true); } )
+    | <CONTINUE> ( EOL() { cp.DoBreakOrContinue(1,false); } | Expr() EOL() { cp.DoBreakOrContinue(1,true); } )
+    | Expr() EOL() { cp.DoPop(); }
+}
+void EOL():{}{
+    <EOL> | <EOS>
+}
+void DeclareStatement()throws CompilationException:{}{
+    <DECLARE> <LBRACKET> DeclareList() <RBRACKET> (
+        Statement()
+        | <SLICE> InnerStatementList() <ENDDECLARE> <EOL>
+    )
+}
+void DeclareList()throws CompilationException:{
+}{
+    DeclareListItem() ( <CAMMA> DeclareListItem() )*
+}
+void DeclareListItem()throws CompilationException:{
+    Token t;
+}{
+    t = <IDENTIFIER> <ASSIGN> StaticConsts()
+}
+void InlineHTML() :{
+    Token t;
+    StringBuilder sb = new StringBuilder();
+}{
+    ( t = <INLINEHTML> { sb.append(t.image); } )+ { cp.DoString(sb.toString()); }
+}
+void Unset()throws CompilationException:{}{
+    <UNSET> <LBRACKET> AtomicExpr() ( <CAMMA> AtomicExpr() )* <RBRACKET> EOL()
+}
+void GlobalDeclarations()throws CompilationException:{}{
+    <GLOBAL> GlobalDeclarationItem() ( <CAMMA> GlobalDeclarationItem() )* EOL()
+}
+void GlobalDeclarationItem()throws CompilationException:{
+    Token t;
+}{
+    t = <VARIABLE> [ <ASSIGN> Expr() ] {  }
+}
+void StaticDeclarations()throws CompilationException:{}{
+    <STATIC> ( StaticDeclarationItem() )+ EOL()
+}
+void StaticDeclarationItem()throws CompilationException:{
+    Token t;
+}{
+    t = <VARIABLE> [ <ASSIGN> Expr() ] { }
+}
+void IfStatement()throws CompilationException :{}{
+    <IF> <LBRACKET> Expr() { cp.DoBeginIfStatement(); } <RBRACKET> (
+        <SLICE> InnerStatementList() (
+            <ELSEIF> { cp.DoEndIfBlock(); }
+            <LBRACKET> Expr() <RBRACKET> { cp.DoElseIfBlock(); }
+            <SLICE> InnerStatementList()
+        )* [ <ELSE> { cp.DoEndIfBlock(); } <SLICE> InnerStatementList() ] <ENDIF> EOL() { cp.DoEndIfStatement(); }
+        | Statement() (
+            <ELSEIF> { cp.DoEndIfBlock(); }
+            <LBRACKET> Expr() <RBRACKET> { cp.DoElseIfBlock(); }
+            Statement()
+        )* [ <ELSE> { cp.DoEndIfBlock(); } Statement() ] { cp.DoEndIfStatement(); }
+    )
+}
+void WhileStatement()throws CompilationException:{}{
+    <WHILE> { cp.DoWhileStatement(0); } <LBRACKET> Expr() { cp.DoWhileStatement(1); } <RBRACKET> (
+        <SLICE> InnerStatementList() <ENDWHILE> EOL() { cp.DoWhileStatement(2); }
+        | Statement() { cp.DoWhileStatement(2); }
+    )
+}
+void DoWhileStatement() throws CompilationException:{}{
+    <DO> { cp.DoDoWhileStatement(0); } Statement() <WHILE> <LBRACKET> { cp.DoDoWhileStatement(1); } Expr() <RBRACKET> <EOL> { cp.DoDoWhileStatement(2); }
+}
+void ForStatement()throws CompilationException:{}{
+    <FOR> <LBRACKET> (
+        ( EOL() | ForExprList() EOL() )
+        ( EOL() | ForExprList() EOL() )
+        ( <RBRACKET> | Expr() <RBRACKET> )
+    )(
+        <SLICE> InnerStatementList() <ENDFOR> EOL()
+        | Statement()
+    )
+}
+void ForExprList()throws CompilationException:{}{
+    Expr() ( <CAMMA> Expr() )*
+}
+void SwitchStatement()throws CompilationException:{}{
+    <SWITCH> <LBRACKET> Expr() <RBRACKET> (
+        <SLICE> SwitchBody() <ENDSWITCH> EOL()
+        | <LBBRACKET> SwitchBody() <RBBRACKET>
+    )
+}
+void SwitchBody()throws CompilationException:{}{
+    ( SwitchBodyStatement() )+
+}
+void SwitchBodyStatement()throws CompilationException:{}{
+    <CASE> Expr() ( <SLICE> | EOL() )
+    | <DEFAULTL> ( <SLICE> | EOL() )
+    | InnerStatement()
+}
+void ForEachStatement() throws CompilationException:{}{
+    <FOREACH> <LBRACKET> Expr() <AS> ForEachExpr() <RBRACKET> (
+        <SLICE> InnerStatementList() <ENDFOREACH> EOL()
+        | Statement()
+    )
+}
+void ForEachExpr() throws CompilationException:{}{
+    ( <BITAND> AtomicExpr() | AtomicExpr() ) [ <DOUBLEARROW> ( <BITAND> AtomicExpr() | AtomicExpr() ) ]
+}
+void TryCatchStatement()throws CompilationException:{}{
+    <TRY> <LBBRACKET> InnerStatementList() <RBBRACKET> ( CatchItem() )*
+}
+void CatchItem()throws CompilationException:{
+    Token t;
+}{
+    <CATCH> <LBRACKET> FullyQualifiedClassName() t = <VARIABLE> <RBRACKET> <LBBRACKET> InnerStatementList() <RBBRACKET> {  }
+}
+void ClassDeclaration()throws CompilationException:{
+    Token t;
+}{
+    (
+        <CLASS> {  }
+        | <ABSTRACT> <CLASS> {  }
+        | <TRAIT> {  }
+        | <FINAL> <CLASS> {  }
+    ) t = <IDENTIFIER> {  }
+    [ <EXTENDS> FullyQualifiedClassName() {  } ]
+    [ <IMPLEMENTS> ImplementList() {  } ]
+    <LBBRACKET> ClassBody() <RBBRACKET>
+    | <INTERFACE> t = <IDENTIFIER> {  }
+    InterfaceExtendList()
+    <LBBRACKET> ClassBody() <RBBRACKET>
+}
+void ImplementList()throws CompilationException:{}{
+    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+}
+void InterfaceExtendList()throws CompilationException:{}{
+    [ <EXTENDS> InterfaceList() ]
+}
+void InterfaceList()throws CompilationException:{}{
+    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+}
+void ClassBody()throws CompilationException:{}{
+    ( MemberDecl() | TraitUseStatement() )*
+}
+void MemberDecl()throws CompilationException:{
+    Token t;
+}{
+    (
+        ( <PUBLIC> | <VAR> )
+        | <PROTECTED> { }
+        | <PRIVATE> {  }
+        | <STATIC> {  }
+        | <ABSTRACT> {  }
+        | <FINAL> {  }
+    )* (
+        VariableMember() ( <CAMMA> VariableMember() )* <EOL>
+        | ConstMember() ( <CAMMA> ConstMember() )* <EOL>
+        | MethodMember()
+    )
+}
+void TraitUseStatement()throws CompilationException:{}{
+    <USE> TraitList() TraitAdaptations()
+}
+void TraitList()throws CompilationException:{}{
+    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+}
+void TraitAdaptations()throws CompilationException:{}{
+    <EOL>
+    | <LBBRACKET> TraitAdaptationList() <RBBRACKET>
+}
+void TraitAdaptationList()throws CompilationException:{}{
+    (
+        LOOKAHEAD( <NAMESPACE> | <NSSEPERATOR> | <IDENTIFIER> <NSSEPERATOR> ) TraitMethodReferenceFullyQualified() (
+            <INSTANCEOF> TraitList() <EOL>
+            | <AS> TraitAliasItem() <EOL>
+        )
+        | TraitMethodReference() <AS> TraitAliasItem() <EOL>
+    )*
+}
+void TraitAliasItem()throws CompilationException:{
+    Token t;
+}{
+    (
+        <PUBLIC> {  }
+        | <PROTECTED>  { }
+        | <PRIVATE> {  }
+    ) [ t = <IDENTIFIER> {  } ]
+    | t = <IDENTIFIER> { }
+}
+void TraitMethodReferenceFullyQualified()throws CompilationException:{
+    Token t;
+}{
+    FullyQualifiedClassName() <DOUBLESLICE> t = <IDENTIFIER> {  }
+}
+
+void TraitMethodReference()throws CompilationException:{
+    Token t;
+}{
+    LOOKAHEAD( <NAMESPACE> | <NSSEPERATOR> | <IDENTIFIER> <NSSEPERATOR> ) TraitMethodReferenceFullyQualified()
+    | t = <IDENTIFIER> {  }
+}
+void VariableMember()throws CompilationException:{
+    Token t;
+}{
+    t = <VARIABLE> [ <ASSIGN> Expr() ] {  }
+}
+void ConstMember()throws CompilationException:{
+    Token t;
+}{
+    <CONST> t = <IDENTIFIER> [ <ASSIGN> Expr() ] {  }
+}
+void MethodMember()throws CompilationException:{
+    Token t;
+}{
+    <FUNCTION> {  } [ <BITAND> {  } ] t = <IDENTIFIER> <LBRACKET> ParametreList() <RBRACKET> (<EOL> | ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>)
+}
+void InnerStatementList()throws CompilationException:{}{
+    ( Statement() )*
+}
+void InnerStatement() throws CompilationException:{}{
+    Statement()
+}
+
+void Expr() throws CompilationException:{}{
+    <LIST> AssignmentList() <ASSIGN> Expr()
+    | ConditionalExpr() [
+        <ASSIGN> { cp.DoBeginAssign(); } Expr() { cp.DoEndAssign(); }
+        | <ASSIGNPLUS> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(PLUS);cp.DoEndAssign(); }
+        | <ASSIGNMINUS> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(MINUS);cp.DoEndAssign(); }
+        | <ASSIGNTIMES> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(TIMES);cp.DoEndAssign(); }
+        | <ASSIGNDIVIDE> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(DIVIDE);cp.DoEndAssign(); }
+        | <ASSIGNMOD> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(MOD);cp.DoEndAssign(); }
+        | <ASSIGNCONCAT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(CONCAT);cp.DoEndAssign(); }
+        | <ASSIGNBITAND> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITAND);cp.DoEndAssign(); }
+        | <ASSIGNBITOR> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITOR);cp.DoEndAssign(); }
+        | <ASSIGNBITXOR> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITXOR);cp.DoEndAssign(); }
+        | <ASSIGNLSHIFT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(LSHIFT);cp.DoEndAssign(); }
+        | <ASSIGNRSHIFT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(RSHIFT);cp.DoEndAssign(); }
+    ]
+}
+void AssignmentList()throws CompilationException:{}{
+    <LBRACKET> AssignmentListItem() ( <CAMMA> AssignmentListItem() )* <RBRACKET>
+}
+void AssignmentListItem()throws CompilationException:{}{
+    UnaryExpr()
+    | <LIST> AssignmentList()
+}
+void ConditionalExpr() throws CompilationException:{}{
+    BinaryExpr() [
+        <EAR> (
+            <SLICE> ConditionalExpr()
+            | BinaryExpr() <SLICE> ConditionalExpr()
+        )
+    ]
+}
+
+void BinaryExpr()throws CompilationException :{
+    Token t;
+    Stack<Token> ts = new Stack<Token>();
+}
+{
+    UnaryExpr() (
+        ( t = <OR>
+        | t = <AND>
+        | t = <XOR>
+        | t = <BITOR>
+        | t = <BITXOR>
+        | t = <BITAND>
+        | t = <EQU>
+        | t = <NEQU>
+        | t = <IDENTICAL>
+        | t = <NIDENTICAL>
+        | t = <MT>
+        | t = <LT>
+        | t = <MTOE>
+        | t = <LTOE>
+        | t = <LSHIFT>
+        | t = <RSHIFT>
+        | t = <PLUS>
+        | t = <MINUS>
+        | t = <CONCAT>
+        | t = <TIMES>
+        | t = <DIVIDE>
+        | t = <MOD> ) {
+            int p1 = getBinaryOptrPriority(t.kind);
+            if(ts.empty()){
+                ts.push(t);
+            }
+            else if(p1 >= getBinaryOptrPriority(ts.peek().kind)){
+                ts.push(t);
+            }
+            else{
+                Token t2;
+                while(!ts.empty() && p1 < getBinaryOptrPriority(ts.peek().kind)){
+                    t2 = ts.pop();
+                    cp.DoBinaryOptr(t2.kind);
+                }
+                ts.push(t);
+            }
+        }
+    UnaryExpr() )* {
+        while(!ts.empty()){
+            cp.DoBinaryOptr(ts.pop().kind);
+        }
+    }
+}
+
+
+/*
+void BinaryExpr() :
+{}
+{
+  AndExpr() ( <OR> AndExpr() )*
+}
+
+void AndExpr() :
+{}
+{
+  OrExpr() ( <AND> OrExpr() )*
+}
+
+void OrExpr():
+{}
+{
+  BitOrExpr() ( <BITOR> BitOrExpr() )*
+}
+
+void BitOrExpr() :
+{}
+{
+  BitAndExpr() ( <BITXOR> BitAndExpr()  )*
+}
+
+void BitAndExpr() :
+{}
+{
+  EquExpr() ( <BITAND> EquExpr() )*
+}
+
+void EquExpr():
+{}
+{
+  RelationalExpr() (
+    <EQU> RelationalExpr()
+    | <NEQU> RelationalExpr()
+    | <IDENTICAL> RelationalExpr()
+    | <NIDENTICAL> RelationalExpr()
+  )*
+}
+
+void RelationalExpr():
+{}
+{
+  ShiftExpr() (
+    <MT> ShiftExpr()
+    | <LT> ShiftExpr()
+    | <MTOE> ShiftExpr()
+    | <LTOE> ShiftExpr()
+  )*
+}
+
+void ShiftExpr():
+{}
+{
+  AdditiveExpr() (
+    <LSHIFT> AdditiveExpr()
+    | <RSHIFT> AdditiveExpr()
+  )*
+}
+
+void AdditiveExpr():
+{}
+{
+  MultiplicativeExpr() (
+    <PLUS> MultiplicativeExpr()
+    | <MINUS> MultiplicativeExpr()
+    | <CONCAT> MultiplicativeExpr()
+  )*
+}
+
+void MultiplicativeExpr():
+{}
+{
+  UnaryExpr() (
+    <TIMES> UnaryExpr()
+    | <DIVIDE> UnaryExpr()
+    | <MOD> UnaryExpr()
+  )*
+}
+*/
+void UnaryExpr()throws CompilationException :{}{
+     <PLUS> UnaryExpr() { cp.DoUnaryOptr(PLUS); }
+    | <MINUS> UnaryExpr() { cp.DoUnaryOptr(MINUS); }
+    | <INC> UnaryExpr() { cp.convertRvalueToLvalue();cp.DoUnaryOptr(INC); }
+    | <DEC> UnaryExpr() { cp.convertRvalueToLvalue();cp.DoUnaryOptr(DEC); }
+    | <NOT> UnaryExpr() { cp.DoUnaryOptr(PLUS); }
+    | <BITAND> UnaryExpr() { cp.DoReference(); }
+    | <BITNOT> UnaryExpr() { cp.DoUnaryOptr(BITNOT); }
+    | <NEW> NewExpr() { cp.DoNew(); }
+    | <CLONE> UnaryExpr() { cp.DoUnaryOptr(CLONE); }
+    | <SILENT> UnaryExpr()
+    | <PRINT> UnaryExpr() { cp.DoPrint(); }
+    | <EXIT> ExitExpr() { cp.DoExit(); }
+    | LOOKAHEAD( <LBRACKET> <INT> ) <LBRACKET> <INT> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <FLOAT> ) <LBRACKET> <FLOAT> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <STRING> ) <LBRACKET> <STRING> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <ARRAY> <RBRACKET> ) <LBRACKET> <ARRAY> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <OBJECT> ) <LBRACKET> <OBJECT> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <BOOL> ) <LBRACKET> <BOOL> <RBRACKET> UnaryExpr()
+    | LOOKAHEAD( <LBRACKET> <UNSET> <RBRACKET> ) <LBRACKET> <UNSET> <RBRACKET> UnaryExpr()
+    | AtomicExpr() [ <INC> { cp.convertRvalueToLvalue();cp.DoPostIncOrDec(false); } | <DEC> { cp.convertRvalueToLvalue();cp.DoPostIncOrDec(true); } | <INSTANCEOF> ClassNameReference()  ]
+    | InternalFunctions()
+}
+
+void NewExpr()throws CompilationException:{
+    Token t;
+}{
+    t = <IDENTIFIER>
+}
+
+void ExitExpr()throws CompilationException:{}{
+    <LBRACKET> ( Expr() <RBRACKET> | <RBRACKET> { cp.DoNombre(0); } )
+    | { cp.DoNombre(0); }
+}
+
+void AtomicExpr()throws CompilationException:{}{
+    Atom() ( Trailer() )*
+}
+void Trailer()throws CompilationException :{
+    Token t;
+}{
+    <LBRACKET> ArgList() <RBRACKET> { cp.DoFunctionCall(); }
+    | <LCBRACKET> (
+        Expr() <RCBRACKET> { cp.DoSubscript(false); }
+        | <RCBRACKET> { cp.DoSubscript(true); }
+    )
+    | <LBBRACKET> Expr() <RBBRACKET> { cp.DoSubscript(false); }
+    | <ARROW> ObjectMember() { cp.DoRequestMember(); }
+}
+
+void Atom()throws CompilationException :{
+    Token t;
+}{
+    Variable()
+    | LOOKAHEAD(2) Constant()
+    | String()
+    | <LBRACKET> Expr() <RBRACKET>
+    | <ARRAY> <LBRACKET> { cp.DoNewArray(); } ArrayBody() <RBRACKET>
+    | <LCBRACKET> { cp.DoNewArray(); } ArrayBody() <RCBRACKET>
+    | AnonymousFunction()
+    | AnonymousClass()
+}
+void String()throws CompilationException:{
+    Token t;
+}{
+    SString()
+    | t = <PSTRING> { cp.DoString(t.image); }
+    | HereDoc()
+}
+
+void SString()throws CompilationException:{
+    Token t;
+    int count = 0;
+}{
+    <BEGIN_OF_SSTRING> ( EcapedVar() { count++; } )* <END_OF_STRING> { if(count == 0) cp.DoString(""); else if(count > 1) cp.DoConcat(count); }
+}
+void HereDoc()throws CompilationException:{
+    int count = 0;
+    Token t;
+    String start;
+}{
+    <HEREDOC_ENTRY> t = <IDENTIFIER> { start = t.image;SwitchTo(IN_HEREDOC); }
+    ( EcapedVar() { count++; } | t = <NAME_IN_HEREDOC> {
+        if(start.equals(t.image)){
+            SwitchTo(IN_SCRIPTING);
+            cp.DoConcat(count);
+            return;
+        }
+        else {
+            cp.DoString(t.image);
+            count++;
+        }
+    })+
+}
+void EcapedVar()throws CompilationException:{
+    Token t;
+    int s;
+}{
+    t = <VARIABLE_IN_STRING> { cp.DoFindVariable(t.image);cp.DoToString(); }
+    | t = <OTHERS_IN_STRING> { cp.DoString(t.image); }
+    | <VARVARIABLE_IN_STRING> { s = token_source.curLexState;SwitchTo(IN_SCRIPTING); } Expr() <RBBRACKET> { SwitchTo(s);cp.DoFindVariableByName();cp.DoToString(); }
+    | <EXPR_IN_STRING> { s = token_source.curLexState;SwitchTo(IN_SCRIPTING); } Expr() <RBBRACKET> { SwitchTo(s);cp.DoToString(); }
+    | t = <ARRAY_IN_STRING> { cp.DoFindVariable(t.image);s = token_source.curLexState;SwitchTo(IN_SCRIPTING); } Expr() <RCBRACKET> { SwitchTo(s);cp.DoSubscript(false);cp.DoToString(); }
+    | t = <PROPERTY_IN_STRING> {
+        int a = t.image.lastIndexOf("->");
+        int b = t.image.length();
+        String vname = t.image.substring(1,a);
+        String property = t.image.substring(a + 2,b - 1);
+        cp.DoFindVariable(vname);
+        cp.DoString(property);
+        cp.DoRequestMember();
+        cp.DoToString();
+    }
+}
+void Constant()throws CompilationException:{
+    Token t;
+}{
+    t = <NOMBRE> { cp.DoNombre(Double.parseDouble(t.image)); }
+    | <CLASS_C>
+    | <TRAIT_C>
+    | <FUNCTION_C>
+    | <METHOD_C>
+    | <LINE_C>
+    | <FILE_C>
+    | <DIR_C>
+    | <NAMESPACE_C> { cp.DoString(cp.getCurrentNameSpace()); }
+    | ConstName() (
+        <DOUBLESLICE> Atom()
+        | LOOKAHEAD( <LBRACKET> ) { cp.DoFindFunction($().data); }
+        | { cp.DoFindConst($().data); }
+    )
+}
+void AnonymousFunction()throws CompilationException:{
+    Token t;
+}{
+    <FUNCTION> {  } [ <BITAND> {  } ] <LBRACKET> ParametreList() <RBRACKET> ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>
+}
+void ScopeUseList()throws CompilationException:{}{
+    [ <USE> <LBRACKET> ScopeUseListItem() ( <CAMMA> ScopeUseListItem() )* <RBRACKET> ]
+}
+void ScopeUseListItem()throws CompilationException:{
+    Token t;
+}{
+    [ <BITAND> {  } ] t = <VARIABLE>
+}
+void AnonymousClass()throws CompilationException:{}{
+    (
+        <CLASS> { }
+        | <ABSTRACT> <CLASS> {  }
+        | <TRAIT> {  }
+        | <FINAL> <CLASS> {  }
+    ) AnonymousClassArgList()
+    [ <EXTENDS> FullyQualifiedClassName() {  } ]
+    [ <IMPLEMENTS> ImplementList() {  } ]
+    <LBBRACKET> ClassBody() <RBBRACKET>
+    | <INTERFACE> AnonymousClassArgList()
+    InterfaceExtendList()
+    <LBBRACKET> ClassBody() <RBBRACKET>
+}
+void AnonymousClassArgList()throws CompilationException:{}{
+    [ <LBRACKET> ArgList() <RBRACKET> ]
+}
+void Variable()throws CompilationException:{
+    Token t;
+}{
+    t = <VARIABLE> { cp.DoFindVariable(t.image); }
+    | <DOLLAR> <LBBRACKET> Expr() <RBBRACKET> { cp.DoFindVariableByName(); }
+}
+
+void ArrayBody()throws CompilationException:{}{
+    [ ArrayBodyItem() (
+        LOOKAHEAD( <CAMMA> <RBRACKET> ) <CAMMA>
+        | <CAMMA> ArrayBodyItem()
+    )* ]
+}
+
+void ArrayBodyItem() throws CompilationException:{}{
+    Expr() (
+        <DOUBLEARROW> Expr() { cp.DoAddArrayItem(); }
+        | { cp.DoNull();cp.DoAddArrayItem(); }
+    )
+}
+
+void ConstArrayBody()throws CompilationException:{}{
+    [ ConstArrayBodyItem() (
+        LOOKAHEAD( <CAMMA> <RBRACKET> ) <CAMMA>
+        | <CAMMA> ConstArrayBodyItem()
+    )* ]
+}
+
+void ConstArrayBodyItem()throws CompilationException:{}{
+    StaticConsts() [ <DOUBLEARROW> StaticConsts() ]
+}
+
+void EchoStatement() throws CompilationException:{}{
+    <ECHO> Expr() { cp.DoEcho(); } ( <CAMMA> Expr() { cp.DoEcho(); } )* EOL()
+}
+
+void ArgList()throws CompilationException:{
+    int count = 0;
+}{
+    [ Expr() { count++; } ( <CAMMA>  Expr() { count++; } )* ] { cp.DoPackArg(count); }
+}
+
+void ObjectMember()throws CompilationException:{
+    Token t;
+}{
+    t = <VARIABLE> { cp.DoFindVariable(t.image);cp.DoToString(); }
+    | <DOLLAR> <LBBRACKET> Expr() <RBBRACKET> { cp.DoFindVariableByName();cp.DoToString(); }
+    | t = <MEMBERNAME> { cp.DoString(t.image); }
+}
+void ForExpr()throws CompilationException:{}{
+    Expr() ( <CAMMA> Expr() )*
+}
+void InternalFunctions()throws CompilationException:{}{
+    <EMPTY> <LBRACKET> AtomicExpr() <RBRACKET>
+    | <INCLUDE> Expr()
+    | <INCLUDE_ONCE> Expr()
+    | <REQUIRE> Expr()
+    | <REQUIRE_ONCE> Expr()
+    | <EVAL> <LBRACKET> Expr() <RBRACKET>
+    | <ISSET> <LBRACKET> Expr() <RBRACKET>
+}
+void FunctionDeclaration()throws CompilationException:{
+    Token t;
+}{
+    <FUNCTION> { } [ <BITAND> { } ] t = <IDENTIFIER> <LBRACKET> ParametreList() <RBRACKET> ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>
+}
+void ParametreList()throws CompilationException:{}{
+    [ ParametreListItem() ( <CAMMA> ParametreListItem() )* ]
+}
+void ParametreListItem()throws CompilationException:{
+    Token t;
+}{
+    [
+        <ARRAY> {  }
+        | <CALLABLE> {  }
+        | FullyQualifiedClassName() { }
+    ] [ <BITAND> {  } ] t = <VARIABLE> {} [ <ASSIGN> Expr() {  } ]
+}
+void FullyQualifiedClassName() throws CompilationException:{}{
+    ConstName()
+}
+void NameSpaceName()throws CompilationException:{
+    Token t;
+    StringBuilder sb = new StringBuilder();
+}{
+    t = <IDENTIFIER> { sb.append(t.image); } ( <NSSEPERATOR> t = <IDENTIFIER> { sb.append("\\" + t.image); } )* { P(new ZNode(ZNode.IS_CONST,sb.toString())); }
+}
+void ClassName() throws CompilationException:{}{
+    <STATIC> { }
+    | ConstName()
+}
+void ClassNameReference()throws CompilationException:{}{
+    LOOKAHEAD(2) ClassName()
+    | Expr()
+}
+void StaticConsts() throws CompilationException:{}{
+    LOOKAHEAD(2) Constant()
+    | NameSpaceName()
+    | <NAMESPACE> <NSSEPERATOR> NameSpaceName()
+    | <NSSEPERATOR> NameSpaceName()
+    | <PLUS> StaticConsts()
+    | <MINUS> StaticConsts()
+    | <ARRAY> <LBRACKET> ConstArrayBody() <RBRACKET>
+    | <LCBRACKET> ConstArrayBody() <RCBRACKET>
+}
+void ConstName() throws CompilationException:{}{
+    NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
+    | <NAMESPACE> <NSSEPERATOR> NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
+    | <NSSEPERATOR> NameSpaceName()
+}
