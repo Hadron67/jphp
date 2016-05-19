@@ -189,7 +189,7 @@ SPECIAL_TOKEN: {
 TOKEN: {
     < BEGIN_OF_SSTRING: <DOUBLE_QUOTES> > : IN_DOUBLE_QUOTES
     | < BEGIN_OF_DSTRING: <BACK_QUOTES> > { matchedToken.kind = BEGIN_OF_SSTRING; } : IN_BACK_QUOTES
-    | <EOS: "?>"> : DEFAULT
+    | <EOS: "?>"> { matchedToken.kind = EOL; } : DEFAULT 
     | <HEREDOC_ENTRY: "<<<">
     | <EAR: "?">
     | <EOL: ";">
@@ -353,7 +353,7 @@ void TopStatement()throws CompilationException:{
 }{
     LOOKAHEAD(3) FunctionDeclaration()
     | LOOKAHEAD(3) ClassDeclaration()
-    | <HALT_COMPILER> <LBRACKET> <RBRACKET> EOL()
+    | <HALT_COMPILER> <LBRACKET> <RBRACKET> <EOL>
     | LOOKAHEAD(2) <NAMESPACE>
     (
         ( NameSpaceName() { cp.DoEnterNameSpace($().data); } (
@@ -381,7 +381,7 @@ void Statement()throws CompilationException:{}{
 void ConstDeclaration()throws CompilationException :{
     Token t;
 }{
-    <CONST> ConstDeclarationItem() (<CAMMA> ConstDeclarationItem() )* EOL()
+    <CONST> ConstDeclarationItem() (<CAMMA> ConstDeclarationItem() )* <EOL>
 }
 void ConstDeclarationItem()throws CompilationException:{
     Token t;
@@ -392,14 +392,14 @@ void UntickedStatement()throws CompilationException :{
     Token t;
 }{
     <LBBRACKET> InnerStatementList() <RBBRACKET>
-    | EOL()
+    | <EOL>
     | LOOKAHEAD (2) InlineHTML() { cp.DoEcho(); }
     | LOOKAHEAD( <IDENTIFIER> <SLICE> ) t = <IDENTIFIER> <SLICE> {  }
-    | <GOTO> t = <IDENTIFIER> EOL() {  }
+    | <GOTO> t = <IDENTIFIER> <EOL> {  }
     | <RETURN> (
-        Expr() EOL()
-        | EOL() )
-    | <THROW> Expr() EOL()
+        Expr() <EOL> { cp.DoReturnOrThrow(0); }
+        | <EOL> { cp.DoNull();cp.DoReturnOrThrow(0); } )
+    | <THROW> Expr() <EOL> { cp.DoReturnOrThrow(1); }
     | Unset()
     | GlobalDeclarations()
     | LOOKAHEAD(2) StaticDeclarations()
@@ -412,13 +412,13 @@ void UntickedStatement()throws CompilationException :{
     | ForEachStatement()
     | TryCatchStatement()
     | DeclareStatement()
-    | <BREAK> ( EOL() { cp.DoBreakOrContinue(0,false); } | Expr() EOL() { cp.DoBreakOrContinue(0,true); } )
-    | <CONTINUE> ( EOL() { cp.DoBreakOrContinue(1,false); } | Expr() EOL() { cp.DoBreakOrContinue(1,true); } )
-    | Expr() EOL() { cp.DoPop(); }
+    | <BREAK> ( <EOL> { cp.DoBreakOrContinue(0,false); } | Expr() <EOL> { cp.DoBreakOrContinue(0,true); } )
+    | <CONTINUE> ( <EOL> { cp.DoBreakOrContinue(1,false); } | Expr() <EOL> { cp.DoBreakOrContinue(1,true); } )
+    | Expr() <EOL> { cp.DoPop(); }
 }
-void EOL():{}{
-    <EOL> | <EOS>
-}
+//void <EOL>:{}{
+//   <EOL> | <EOS>
+//}
 void DeclareStatement()throws CompilationException:{}{
     <DECLARE> <LBRACKET> DeclareList() <RBRACKET> (
         Statement()
@@ -441,10 +441,10 @@ void InlineHTML() :{
     ( t = <INLINEHTML> { sb.append(t.image); } )+ { cp.DoString(sb.toString()); }
 }
 void Unset()throws CompilationException:{}{
-    <UNSET> <LBRACKET> AtomicExpr() ( <CAMMA> AtomicExpr() )* <RBRACKET> EOL()
+    <UNSET> <LBRACKET> Expr() { cp.DoUnset(); } ( <CAMMA> Expr() { cp.DoUnset(); } )* <RBRACKET> <EOL>
 }
 void GlobalDeclarations()throws CompilationException:{}{
-    <GLOBAL> GlobalDeclarationItem() ( <CAMMA> GlobalDeclarationItem() )* EOL()
+    <GLOBAL> GlobalDeclarationItem() ( <CAMMA> GlobalDeclarationItem() )* <EOL>
 }
 void GlobalDeclarationItem()throws CompilationException:{
     Token t;
@@ -452,7 +452,7 @@ void GlobalDeclarationItem()throws CompilationException:{
     t = <VARIABLE> [ <ASSIGN> Expr() ] {  }
 }
 void StaticDeclarations()throws CompilationException:{}{
-    <STATIC> ( StaticDeclarationItem() )+ EOL()
+    <STATIC> ( StaticDeclarationItem() )+ <EOL>
 }
 void StaticDeclarationItem()throws CompilationException:{
     Token t;
@@ -465,7 +465,7 @@ void IfStatement()throws CompilationException :{}{
             <ELSEIF> { cp.DoEndIfBlock(); }
             <LBRACKET> Expr() <RBRACKET> { cp.DoElseIfBlock(); }
             <SLICE> InnerStatementList()
-        )* [ <ELSE> { cp.DoEndIfBlock(); } <SLICE> InnerStatementList() ] <ENDIF> EOL() { cp.DoEndIfStatement(); }
+        )* [ <ELSE> { cp.DoEndIfBlock(); } <SLICE> InnerStatementList() ] <ENDIF> <EOL> { cp.DoEndIfStatement(); }
         | Statement() (
             <ELSEIF> { cp.DoEndIfBlock(); }
             <LBRACKET> Expr() <RBRACKET> { cp.DoElseIfBlock(); }
@@ -475,7 +475,7 @@ void IfStatement()throws CompilationException :{}{
 }
 void WhileStatement()throws CompilationException:{}{
     <WHILE> { cp.DoWhileStatement(0); } <LBRACKET> Expr() { cp.DoWhileStatement(1); } <RBRACKET> (
-        <SLICE> InnerStatementList() <ENDWHILE> EOL() { cp.DoWhileStatement(2); }
+        <SLICE> InnerStatementList() <ENDWHILE> <EOL> { cp.DoWhileStatement(2); }
         | Statement() { cp.DoWhileStatement(2); }
     )
 }
@@ -484,39 +484,45 @@ void DoWhileStatement() throws CompilationException:{}{
 }
 void ForStatement()throws CompilationException:{}{
     <FOR> <LBRACKET> (
-        ( EOL() | ForExprList() EOL() )
-        ( EOL() | ForExprList() EOL() )
-        ( <RBRACKET> | Expr() <RBRACKET> )
+        ForExprList() <EOL> { cp.DoForStatement(0); }
+        ForExprList() <EOL> { cp.DoForStatement(1); }
+        ForExprList() <RBRACKET> { cp.DoForStatement(2); }
     )(
-        <SLICE> InnerStatementList() <ENDFOR> EOL()
-        | Statement()
+        <SLICE> InnerStatementList() <ENDFOR> <EOL> { cp.DoForStatement(3); }
+        | Statement() { cp.DoForStatement(3); }
     )
 }
 void ForExprList()throws CompilationException:{}{
-    Expr() ( <CAMMA> Expr() )*
+    [ Expr() ( <CAMMA> { cp.DoPop(); } Expr() )* ]
 }
 void SwitchStatement()throws CompilationException:{}{
-    <SWITCH> <LBRACKET> Expr() <RBRACKET> (
-        <SLICE> SwitchBody() <ENDSWITCH> EOL()
-        | <LBBRACKET> SwitchBody() <RBBRACKET>
+    <SWITCH> <LBRACKET> Expr() { cp.DoSwitchOrCase(0); } <RBRACKET> (
+        <SLICE> SwitchBody() <ENDSWITCH> <EOL> { cp.DoSwitchOrCase(4); }
+        | <LBBRACKET> SwitchBody() <RBBRACKET> { cp.DoSwitchOrCase(4); }
     )
 }
 void SwitchBody()throws CompilationException:{}{
     ( SwitchBodyStatement() )+
 }
 void SwitchBodyStatement()throws CompilationException:{}{
-    <CASE> Expr() ( <SLICE> | EOL() )
-    | <DEFAULTL> ( <SLICE> | EOL() )
+    <CASE> { { cp.DoSwitchOrCase(1); } } Expr() { cp.DoSwitchOrCase(2); } ( <SLICE> | <EOL> )
+    | <DEFAULTL> ( <SLICE> | <EOL> ) { cp.DoSwitchOrCase(3); }
     | InnerStatement()
 }
 void ForEachStatement() throws CompilationException:{}{
-    <FOREACH> <LBRACKET> Expr() <AS> ForEachExpr() <RBRACKET> (
-        <SLICE> InnerStatementList() <ENDFOREACH> EOL()
-        | Statement()
+    <FOREACH> <LBRACKET> Expr() { cp.DoForEachStatement(0); } <AS> ForEachExpr() <RBRACKET> (
+        <SLICE> InnerStatementList() <ENDFOREACH> <EOL> { cp.DoForEachStatement(2); }
+        | Statement() { cp.DoForEachStatement(2); }
     )
 }
-void ForEachExpr() throws CompilationException:{}{
-    ( <BITAND> AtomicExpr() | AtomicExpr() ) [ <DOUBLEARROW> ( <BITAND> AtomicExpr() | AtomicExpr() ) ]
+void ForEachExpr() throws CompilationException:{
+    boolean r = false;
+}{
+    ( [ <BITAND> { r = true; } ] { cp.DoDup();cp.DoRequestArrayPointerItem(true); } AtomicExpr() { cp.convertRvalueToLvalue();cp.DoSwitch(); }
+    (
+        <DOUBLEARROW> ( <BITAND> | { cp.DoDereference(); } ) AtomicExpr() { cp.convertRvalueToLvalue();cp.DoAssign(false,true);cp.DoPop();cp.DoSwitch();if(!r)cp.DoDereference();cp.DoAssign(false,false);cp.DoPop(); }
+        | { if(!r)cp.DoDereference();cp.DoAssign(false,false);cp.DoPop();cp.DoPop(); } )
+    )| <LIST> <LBRACKET> AssignmentList() <RBRACKET> { cp.DoAssign(true,true);cp.DoPop(); }
 }
 void TryCatchStatement()throws CompilationException:{}{
     <TRY> <LBBRACKET> InnerStatementList() <RBBRACKET> ( CatchItem() )*
@@ -634,28 +640,29 @@ void InnerStatement() throws CompilationException:{}{
 }
 
 void Expr() throws CompilationException:{}{
-    <LIST> AssignmentList() <ASSIGN> Expr()
+    <LIST> <LBRACKET> AssignmentList() <RBRACKET> <ASSIGN> Expr() { cp.DoAssign(true,false); }
     | ConditionalExpr() [
-        <ASSIGN> { cp.DoBeginAssign(); } Expr() { cp.DoEndAssign(); }
-        | <ASSIGNPLUS> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(PLUS);cp.DoEndAssign(); }
-        | <ASSIGNMINUS> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(MINUS);cp.DoEndAssign(); }
-        | <ASSIGNTIMES> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(TIMES);cp.DoEndAssign(); }
-        | <ASSIGNDIVIDE> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(DIVIDE);cp.DoEndAssign(); }
-        | <ASSIGNMOD> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(MOD);cp.DoEndAssign(); }
-        | <ASSIGNCONCAT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(CONCAT);cp.DoEndAssign(); }
-        | <ASSIGNBITAND> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITAND);cp.DoEndAssign(); }
-        | <ASSIGNBITOR> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITOR);cp.DoEndAssign(); }
-        | <ASSIGNBITXOR> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITXOR);cp.DoEndAssign(); }
-        | <ASSIGNLSHIFT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(LSHIFT);cp.DoEndAssign(); }
-        | <ASSIGNRSHIFT> { cp.DoBeginAssign();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(RSHIFT);cp.DoEndAssign(); }
+        <ASSIGN> { cp.convertRvalueToLvalue(); } Expr() { cp.DoAssign(false,false); }
+        | <ASSIGNPLUS> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(PLUS);cp.DoAssign(false,false); }
+        | <ASSIGNMINUS> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr() { cp.DoBinaryOptr(MINUS);cp.DoAssign(false,false); }
+        | <ASSIGNTIMES> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(TIMES);cp.DoAssign(false,false); }
+        | <ASSIGNDIVIDE> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(DIVIDE);cp.DoAssign(false,false); }
+        | <ASSIGNMOD> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(MOD);cp.DoAssign(false,false); }
+        | <ASSIGNCONCAT> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(CONCAT);cp.DoAssign(false,false); }
+        | <ASSIGNBITAND> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITAND);cp.DoAssign(false,false); }
+        | <ASSIGNBITOR> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITOR);cp.DoAssign(false,false); }
+        | <ASSIGNBITXOR> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(BITXOR);cp.DoAssign(false,false); }
+        | <ASSIGNLSHIFT> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(LSHIFT);cp.DoAssign(false,false); }
+        | <ASSIGNRSHIFT> { cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference(); } Expr(){ cp.DoBinaryOptr(RSHIFT);cp.DoAssign(false,false); }
     ]
 }
 void AssignmentList()throws CompilationException:{}{
-    <LBRACKET> AssignmentListItem() ( <CAMMA> AssignmentListItem() )* <RBRACKET>
+    { cp.DoNewArray(); } AssignmentListItem() ( <CAMMA> AssignmentListItem() )*
 }
 void AssignmentListItem()throws CompilationException:{}{
-    UnaryExpr()
+    UnaryExpr() { cp.convertRvalueToLvalue();cp.DoAddArrayItem(false); }
     | <LIST> AssignmentList()
+    | { cp.DoNull();cp.DoAddArrayItem(false); }
 }
 void ConditionalExpr() throws CompilationException:{}{
     BinaryExpr() [
@@ -928,8 +935,8 @@ void Constant()throws CompilationException:{
     | <NAMESPACE_C> { cp.DoString(cp.getCurrentNameSpace()); }
     | ConstName() (
         <DOUBLESLICE> Atom()
-        | LOOKAHEAD( <LBRACKET> ) { cp.DoFindFunction($().data); }
-        | { cp.DoFindConst($().data); }
+        | LOOKAHEAD( <LBRACKET> ) { cp.DoFindFunction("\\" + $().data); }
+        | { cp.DoFindConst("\\" + $().data); }
     )
 }
 void AnonymousFunction()throws CompilationException:{
@@ -978,8 +985,8 @@ void ArrayBody()throws CompilationException:{}{
 
 void ArrayBodyItem() throws CompilationException:{}{
     Expr() (
-        <DOUBLEARROW> Expr() { cp.DoAddArrayItem(); }
-        | { cp.DoNull();cp.DoAddArrayItem(); }
+        <DOUBLEARROW> Expr() { cp.DoAddArrayItem(true); }
+        | { cp.DoAddArrayItem(false); }
     )
 }
 
@@ -995,7 +1002,7 @@ void ConstArrayBodyItem()throws CompilationException:{}{
 }
 
 void EchoStatement() throws CompilationException:{}{
-    <ECHO> Expr() { cp.DoEcho(); } ( <CAMMA> Expr() { cp.DoEcho(); } )* EOL()
+    <ECHO> Expr() { cp.DoEcho(); } ( <CAMMA> Expr() { cp.DoEcho(); } )* <EOL>
 }
 
 void ArgList()throws CompilationException:{

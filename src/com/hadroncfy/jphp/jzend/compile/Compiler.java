@@ -10,8 +10,10 @@ public interface Compiler {
     void DoPostIncOrDec(boolean is_dec);
     void DoDup();
     void DoNull();
+    void DoSwitch();
     void DoNewArray();
-    void DoAddArrayItem();
+    void DoAddArrayItem(boolean is_map);
+    void DoRequestArrayPointerItem(boolean is_reference);
     void DoDereference();
     void DoPop();
     void DoNombre(double n);
@@ -29,8 +31,7 @@ public interface Compiler {
     void DoExit();
     void DoPrint();
     void DoEcho();
-    void DoBeginAssign() throws CompilationException;
-    void DoEndAssign();
+    void DoAssign(boolean is_array,boolean is_rev);
     void DoReference()throws CompilationException;
     void DoNew();
     void DoFindClass();
@@ -47,6 +48,11 @@ public interface Compiler {
 
     void DoWhileStatement(int where);
     void DoDoWhileStatement(int where);
+    void DoForStatement(int where);
+    void DoForEachStatement(int where);
+    void DoSwitchOrCase(int where);
     void DoBreakOrContinue(int which,boolean has_expr);
+    void DoReturnOrThrow(int which);
+    void DoUnset()throws CompilationException;
     void finishCompiling();
 }

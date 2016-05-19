@@ -1,8 +1,9 @@
 <?php
-$e = array(
-    'soor' => 1,
-    'rfnj' => [ "byzi" => 65,"sss" => "ceci n'est pas un array" ]
-);
-while($i < 10){
-    echo "je m'applle $e[$i]";
-}
+namespace std;
+$e = \aaa(); //3d
+echo __NAMESPACE__;
+$rrr = [ 'soor' => 'ne sais pas le pourquoi!','rfnj' => 'tu dois ici','dgvg' => ['zzy','wxy'] ];
+foreach($rrr as $a => $b){
+    echo "la mot '$a' est '$b'\n"; ?>
+<title>le blog de cfy</title>
+<?php } ?>

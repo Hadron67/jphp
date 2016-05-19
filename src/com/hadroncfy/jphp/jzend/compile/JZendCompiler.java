@@ -13,10 +13,13 @@ public class JZendCompiler implements Compiler{
     private Stack<String> ns_stack;
     private List<Instruction> op_array;
     private List<Instruction> current_array;
+    private Stack<List<Instruction>> op_array_stack;
     private Stack<IfContext> ifstmt_stack;
     private Stack<Instruction> loop_entry_stack;
     private Stack<Instruction> while_loop_escape_stack;
     private Stack<Integer> do_while_loop_entry_stack;
+    private Stack<Instruction> for_loop_escape_stack;
+    private Stack<Instruction> foreach_loop_escape_stack;
     private int getLine(){
         return op_array.size();
     }
@@ -31,7 +34,7 @@ public class JZendCompiler implements Compiler{
         }
     }
     private Instruction getIns(int i){
-        return op_array.get(op_array.size() - i - 1);
+        return current_array.get(current_array.size() - i - 1);
     }
 
     public JZendCompiler(){
@@ -39,12 +42,31 @@ public class JZendCompiler implements Compiler{
         current_array = op_array;
         ns_stack = new Stack<>();
         ns_stack.push("");
+        op_array_stack = new Stack<>();
+        op_array_stack.push(op_array);
         ifstmt_stack = new Stack<>();
         loop_entry_stack = new Stack<>();
         while_loop_escape_stack = new Stack<>();
         do_while_loop_entry_stack = new Stack<>();
+        for_loop_escape_stack = new Stack<>();
+        foreach_loop_escape_stack = new Stack<>();
     }
 
+    private void switchToOpArray(){
+        current_array = op_array;
+    }
+    private void switchToStack(){
+        current_array = op_array_stack.peek();
+    }
+    private void pushOpStack(){
+        op_array_stack.push(new ArrayList<>());
+    }
+    private void popOpStack(){
+        List<Instruction> inslist = op_array_stack.pop();
+        for(Instruction ins : inslist){
+            op_array.add(ins);
+        }
+    }
     private void evalConcat(){
         if(getIns(0).opcode == Opcode.STRING){
             StringBuilder sb = new StringBuilder();
@@ -118,13 +140,29 @@ public class JZendCompiler implements Compiler{
     }
 
     @Override
+    public void DoSwitch() {
+        addIns(new Instruction(Opcode.SWITCH));
+    }
+
+    @Override
     public void DoNewArray() {
         addIns(new Instruction(Opcode.NEW_ARRAY));
     }
 
     @Override
-    public void DoAddArrayItem() {
-        addIns(new Instruction(Opcode.ADD_ARRAY_ITEM));
+    public void DoAddArrayItem(boolean is_map) {
+        if(!is_map)
+            addIns(new Instruction(Opcode.ADD_ARRAY_ITEM));
+        else
+            addIns(new Instruction(Opcode.ADD_ARRAY_MAP_ITEM));
+    }
+
+    @Override
+    public void DoRequestArrayPointerItem(boolean is_reference) {
+        if(is_reference)
+            addIns(new Instruction(Opcode.ARRAY_GET_POINTER_ITEM_AS_REFERENCE));
+        else
+            addIns(new Instruction(Opcode.ARRAY_GET_POINTER_ITEM));
     }
 
     @Override
@@ -235,11 +273,6 @@ public class JZendCompiler implements Compiler{
     }
 
     @Override
-    public void DoBeginAssign() throws CompilationException {
-        convertRvalueToLvalue();
-    }
-
-    @Override
     public void convertRvalueToLvalue() throws CompilationException {
         CheckWritable();
         Instruction ins = getIns(0);
@@ -334,6 +367,97 @@ public class JZendCompiler implements Compiler{
     }
 
     @Override
+    public void DoForStatement(int where) {
+        switch(where){
+            case 0://end of the first expression,begin of second expression
+                addIns(new Instruction(Opcode.POP));
+                Instruction ins = new Instruction(Opcode.BEGIN_LOOP);
+                addIns(ins);
+                ins.ddata = getLine();
+                loop_entry_stack.push(ins);
+                break;
+            case 1://end of second expression,begin of third expression
+                addIns(new Instruction(Opcode.NOT));
+                Instruction ins2 = new Instruction(Opcode.CONDITIONAL_GOTO);
+                addIns(ins2);
+                for_loop_escape_stack.push(ins2);
+                pushOpStack();
+                switchToStack();
+                break;
+            case 2://end of third expression,begin of code block
+                switchToOpArray();
+                break;
+            case 3://end of code block
+                popOpStack();
+                Instruction loopbegin = loop_entry_stack.pop();
+                addIns(new Instruction(Opcode.GOTO,loopbegin.ddata));
+                loopbegin.ddata2 = getLine();
+                for_loop_escape_stack.pop().ddata = getLine();
+                break;
+            default:throw new RuntimeException("Unknown location in for-statement:" + where);
+        }
+    }
+
+    @Override
+    public void DoForEachStatement(int where) {
+        switch(where){
+            case 0://end of first expression,begin of second expression
+                Instruction ins = new Instruction(Opcode.BEGIN_LOOP);
+                addIns(ins);
+                ins.ddata = getLine();
+                loop_entry_stack.push(ins);
+                addIns(new Instruction(Opcode.DUP));
+                addIns(new Instruction(Opcode.ARRAY_POINTER_END));
+                ins = new Instruction(Opcode.CONDITIONAL_GOTO);
+                addIns(ins);
+                foreach_loop_escape_stack.push(ins);
+                break;
+            case 1://end of second expression,begin of code block
+
+                break;
+            case 2://end of code block
+                ins = loop_entry_stack.pop();
+                addIns(new Instruction(Opcode.DUP));
+                addIns(new Instruction(Opcode.ARRAY_POINTER_INC));
+                addIns(new Instruction(Opcode.POP));
+                addIns(new Instruction(Opcode.GOTO,ins.ddata));
+                foreach_loop_escape_stack.pop().ddata = getLine();
+                ins.ddata2 = getLine();
+                addIns(new Instruction(Opcode.ARRAY_POINTER_RESET));
+                addIns(new Instruction(Opcode.POP));
+                break;
+        }
+    }
+
+    @Override
+    public void DoSwitchOrCase(int where) {
+        switch(where){
+            case 0://begin of switch statement
+                Instruction ins = new Instruction(Opcode.BEGIN_LOOP);
+                ins.ddata = -1;
+                addIns(ins);
+                addIns(new Instruction(Opcode.BEGIN_SWITCH));
+                loop_entry_stack.push(ins);
+                break;
+            case 1://case expression begin
+                addIns(new Instruction(Opcode.BEGIN_CASE));
+                break;
+            case 2://case label
+                addIns(new Instruction(Opcode.CASE));
+                break;
+            case 3:
+                addIns(new Instruction(Opcode.DEFAUL));
+                break;
+            case 4://end of the statement
+                if(getIns(0).opcode != Opcode.DEFAUL)
+                    addIns(new Instruction(Opcode.DEFAUL));
+                loop_entry_stack.pop().ddata2 = getLine();
+                break;
+            default:throw new RuntimeException("Unknown location in switch:" + where);
+        }
+    }
+
+    @Override
     public void DoBreakOrContinue(int which,boolean has_expr) {
         if(!has_expr)
             addIns(new Instruction(Opcode.NUMBER,1));
@@ -349,13 +473,41 @@ public class JZendCompiler implements Compiler{
     }
 
     @Override
+    public void DoReturnOrThrow(int which) {
+        switch(which){
+            case 0://return
+                addIns(new Instruction(Opcode.RETURN));
+                break;
+            case 1://throw
+                addIns(new Instruction(Opcode.THROW));
+                break;
+            default:throw new RuntimeException("not return nor throw:" + which);
+        }
+    }
+
+    @Override
+    public void DoUnset() throws CompilationException {
+        convertRvalueToLvalue();
+        addIns(new Instruction(Opcode.UNSET));
+    }
+
+    @Override
     public void finishCompiling() {
+        addIns(new Instruction(Opcode.NUMBER,0));
         addIns(new Instruction(Opcode.EXIT));
     }
 
     @Override
-    public void DoEndAssign() {
-        addIns(new Instruction(Opcode.ASSIGN));
+    public void DoAssign(boolean is_array, boolean is_rev) {
+        if(is_rev)
+            addIns(new Instruction(Opcode.SWITCH));
+        if(!is_array){
+            addIns(new Instruction(Opcode.ASSIGN));
+        }
+        else{
+            addIns(new Instruction(Opcode.ARRAY_ASSIGN));
+        }
+
     }
 
     @Override

@@ -3681,6 +3681,11 @@ void TokenLexicalActions(Token matchedToken)
         image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                             matchedToken.kind = BEGIN_OF_SSTRING;
          break;
+      case 42 :
+        image.append(jjstrLiteralImages[42]);
+        lengthOfMatch = jjstrLiteralImages[42].length();
+                    matchedToken.kind = EOL;
+         break;
       case 172 :
         image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                 matchedToken.image = image.deleteCharAt(0).toString();

@@ -66,7 +66,23 @@ public interface Opcode {
     BREAK = 59,
     CONTINUE = 60,
     NEW_ARRAY = 61,
-    ADD_ARRAY_ITEM = 62;
+    ADD_ARRAY_ITEM = 62,
+    ARRAY_POINTER_INC = 63,
+    ARRAY_POINTER_END = 64,
+    ARRAY_POINTER_RESET = 65,
+    ARRAY_ASSIGN = 66,
+    DEFAUL = 67,
+    ADD_ARRAY_MAP_ITEM = 68,
+    ARRAY_GET_POINTER_ITEM = 69,
+    ARRAY_GET_POINTER_ITEM_AS_REFERENCE = 70,
+    UNSET = 71,
+
+    SWITCH = 73,
+    BEGIN_SWITCH = 74,
+    CASE = 75,
+    BEGIN_CASE = 76,
+    RETURN = 77,
+    THROW = 78;
 
     String[] ins_names = {
             "POP",
@@ -131,6 +147,22 @@ public interface Opcode {
             "BREAK",
             "CONTINUE",
             "NEW_ARRAY",
-            "ADD_ARRAY_ITEM"
+            "ADD_ARRAY_ITEM",
+            "ARRAY_POINTER_INC",
+            "ARRAY_POINTER_END",
+            "ARRAY_POINTER_RESET",
+            "ARRAY_ASSIGN",
+            "DEFAULT",
+            "ADD_ARRAY_MAP_ITEM",
+            "ARRAY_GET_POINTER_ITEM",
+            "ARRAY_GET_POINTER_VALUE",
+            "ARRAY_GET_POINTER_ITEM_AS_REFERENCE",
+            "UNSET",
+            "SWITCH",
+            "BEGIN_SWITCH",
+            "CASE",
+            "BEGIN_CASE",
+            "RETURN",
+            "THROW"
     };
 }
