@@ -167,167 +167,175 @@ public interface JZendParserConstants {
   /** RegularExpression Id. */
   int NSSEPERATOR = 96;
   /** RegularExpression Id. */
-  int INT = 97;
+  int TAB_AND_SPACES = 97;
   /** RegularExpression Id. */
-  int FLOAT = 98;
+  int INT_CAST = 98;
   /** RegularExpression Id. */
-  int STRING = 99;
+  int FLOAT_CAST = 99;
   /** RegularExpression Id. */
-  int ARRAY = 100;
+  int STRING_CAST = 100;
   /** RegularExpression Id. */
-  int OBJECT = 101;
+  int ARRAY_CAST = 101;
   /** RegularExpression Id. */
-  int BOOL = 102;
+  int OBJECT_CAST = 102;
   /** RegularExpression Id. */
-  int UNSET = 103;
+  int BOOL_CAST = 103;
   /** RegularExpression Id. */
-  int ECHO = 104;
+  int UNSET_CAST = 104;
   /** RegularExpression Id. */
-  int CONST = 105;
+  int ARRAY = 105;
   /** RegularExpression Id. */
-  int GOTO = 106;
+  int UNSET = 106;
   /** RegularExpression Id. */
-  int IF = 107;
+  int ECHO = 107;
   /** RegularExpression Id. */
-  int ELSEIF = 108;
+  int CONST = 108;
   /** RegularExpression Id. */
-  int ELSE = 109;
+  int GOTO = 109;
   /** RegularExpression Id. */
-  int ENDIF = 110;
+  int IF = 110;
   /** RegularExpression Id. */
-  int WHILE = 111;
+  int ELSEIF = 111;
   /** RegularExpression Id. */
-  int DO = 112;
+  int ELSE = 112;
   /** RegularExpression Id. */
-  int ENDWHILE = 113;
+  int ENDIF = 113;
   /** RegularExpression Id. */
-  int FOR = 114;
+  int WHILE = 114;
   /** RegularExpression Id. */
-  int ENDFOR = 115;
+  int DO = 115;
   /** RegularExpression Id. */
-  int FOREACH = 116;
+  int ENDWHILE = 116;
   /** RegularExpression Id. */
-  int ENDFOREACH = 117;
+  int FOR = 117;
   /** RegularExpression Id. */
-  int SWITCH = 118;
+  int ENDFOR = 118;
   /** RegularExpression Id. */
-  int CASE = 119;
+  int FOREACH = 119;
   /** RegularExpression Id. */
-  int DEFAULTL = 120;
+  int ENDFOREACH = 120;
   /** RegularExpression Id. */
-  int BREAK = 121;
+  int SWITCH = 121;
   /** RegularExpression Id. */
-  int CONTINUE = 122;
+  int CASE = 122;
   /** RegularExpression Id. */
-  int ENDSWITCH = 123;
+  int DEFAULTL = 123;
   /** RegularExpression Id. */
-  int EMPTY = 124;
+  int BREAK = 124;
   /** RegularExpression Id. */
-  int INCLUDE = 125;
+  int CONTINUE = 125;
   /** RegularExpression Id. */
-  int INCLUDE_ONCE = 126;
+  int ENDSWITCH = 126;
   /** RegularExpression Id. */
-  int REQUIRE = 127;
+  int EMPTY = 127;
   /** RegularExpression Id. */
-  int REQUIRE_ONCE = 128;
+  int INCLUDE = 128;
   /** RegularExpression Id. */
-  int EVAL = 129;
+  int INCLUDE_ONCE = 129;
   /** RegularExpression Id. */
-  int ISSET = 130;
+  int REQUIRE = 130;
   /** RegularExpression Id. */
-  int AS = 131;
+  int REQUIRE_ONCE = 131;
   /** RegularExpression Id. */
-  int STATIC = 132;
+  int EVAL = 132;
   /** RegularExpression Id. */
-  int GLOBAL = 133;
+  int ISSET = 133;
   /** RegularExpression Id. */
-  int NEW = 134;
+  int AS = 134;
   /** RegularExpression Id. */
-  int CLONE = 135;
+  int STATIC = 135;
   /** RegularExpression Id. */
-  int FUNCTION = 136;
+  int GLOBAL = 136;
   /** RegularExpression Id. */
-  int USE = 137;
+  int NEW = 137;
   /** RegularExpression Id. */
-  int CALLABLE = 138;
+  int CLONE = 138;
   /** RegularExpression Id. */
-  int RETURN = 139;
+  int FUNCTION = 139;
   /** RegularExpression Id. */
-  int SILENT = 140;
+  int USE = 140;
   /** RegularExpression Id. */
-  int PRINT = 141;
+  int RETURN = 141;
   /** RegularExpression Id. */
-  int LIST = 142;
+  int SILENT = 142;
   /** RegularExpression Id. */
-  int EXIT = 143;
+  int PRINT = 143;
   /** RegularExpression Id. */
-  int THROW = 144;
+  int LIST = 144;
   /** RegularExpression Id. */
-  int NAMESPACE = 145;
+  int EXIT = 145;
   /** RegularExpression Id. */
-  int HALT_COMPILER = 146;
+  int THROW = 146;
   /** RegularExpression Id. */
-  int TRY = 147;
+  int NAMESPACE = 147;
   /** RegularExpression Id. */
-  int CATCH = 148;
+  int HALT_COMPILER = 148;
   /** RegularExpression Id. */
-  int VAR = 149;
+  int TRY = 149;
   /** RegularExpression Id. */
-  int CLASS = 150;
+  int CATCH = 150;
   /** RegularExpression Id. */
-  int EXTENDS = 151;
+  int FINALLY = 151;
   /** RegularExpression Id. */
-  int INTERFACE = 152;
+  int VAR = 152;
   /** RegularExpression Id. */
-  int IMPLEMENTS = 153;
+  int CLASS = 153;
   /** RegularExpression Id. */
-  int FINAL = 154;
+  int EXTENDS = 154;
   /** RegularExpression Id. */
-  int ABSTRACT = 155;
+  int INTERFACE = 155;
   /** RegularExpression Id. */
-  int TRAIT = 156;
+  int IMPLEMENTS = 156;
   /** RegularExpression Id. */
-  int PUBLIC = 157;
+  int FINAL = 157;
   /** RegularExpression Id. */
-  int PROTECTED = 158;
+  int ABSTRACT = 158;
   /** RegularExpression Id. */
-  int PRIVATE = 159;
+  int TRAIT = 159;
   /** RegularExpression Id. */
-  int INSTEADOF = 160;
+  int PUBLIC = 160;
   /** RegularExpression Id. */
-  int DECLARE = 161;
+  int PROTECTED = 161;
   /** RegularExpression Id. */
-  int ENDDECLARE = 162;
+  int PRIVATE = 162;
   /** RegularExpression Id. */
-  int CLASS_C = 163;
+  int INSTEADOF = 163;
   /** RegularExpression Id. */
-  int TRAIT_C = 164;
+  int DECLARE = 164;
   /** RegularExpression Id. */
-  int FUNCTION_C = 165;
+  int ENDDECLARE = 165;
   /** RegularExpression Id. */
-  int METHOD_C = 166;
+  int CLASS_C = 166;
   /** RegularExpression Id. */
-  int LINE_C = 167;
+  int TRAIT_C = 167;
   /** RegularExpression Id. */
-  int FILE_C = 168;
+  int FUNCTION_C = 168;
   /** RegularExpression Id. */
-  int DIR_C = 169;
+  int METHOD_C = 169;
   /** RegularExpression Id. */
-  int NAMESPACE_C = 170;
+  int LINE_C = 170;
   /** RegularExpression Id. */
-  int IDENTIFIER = 171;
+  int FILE_C = 171;
   /** RegularExpression Id. */
-  int VARIABLE = 172;
+  int DIR_C = 172;
   /** RegularExpression Id. */
-  int DOLLAR = 173;
+  int NAMESPACE_C = 173;
   /** RegularExpression Id. */
-  int NAME = 174;
+  int IDENTIFIER = 174;
   /** RegularExpression Id. */
-  int LETTER = 175;
+  int VARIABLE = 175;
   /** RegularExpression Id. */
-  int DIGIT = 176;
+  int DOLLAR = 176;
   /** RegularExpression Id. */
-  int NOMBRE = 177;
+  int NAME = 177;
+  /** RegularExpression Id. */
+  int LETTER = 178;
+  /** RegularExpression Id. */
+  int DIGIT = 179;
+  /** RegularExpression Id. */
+  int NOMBRE = 180;
+  /** RegularExpression Id. */
+  int INTEGER = 181;
 
   /** Lexical state. */
   int IN_SCRIPTING = 0;
@@ -447,12 +455,15 @@ public interface JZendParserConstants {
     "\"=>\"",
     "\"instanceof\"",
     "\"\\\\\"",
-    "<INT>",
-    "<FLOAT>",
-    "<STRING>",
+    "<TAB_AND_SPACES>",
+    "<INT_CAST>",
+    "<FLOAT_CAST>",
+    "<STRING_CAST>",
+    "<ARRAY_CAST>",
+    "<OBJECT_CAST>",
+    "<BOOL_CAST>",
+    "<UNSET_CAST>",
     "\"array\"",
-    "\"object\"",
-    "<BOOL>",
     "\"unset\"",
     "\"echo\"",
     "\"const\"",
@@ -488,7 +499,6 @@ public interface JZendParserConstants {
     "\"clone\"",
     "\"function\"",
     "\"use\"",
-    "\"callable\"",
     "\"return\"",
     "\"@\"",
     "\"print\"",
@@ -499,6 +509,7 @@ public interface JZendParserConstants {
     "\"__halt_compiler\"",
     "\"try\"",
     "\"catch\"",
+    "\"finally\"",
     "\"var\"",
     "\"class\"",
     "\"extends\"",
@@ -528,6 +539,7 @@ public interface JZendParserConstants {
     "<LETTER>",
     "<DIGIT>",
     "<NOMBRE>",
+    "<INTEGER>",
   };
 
 }

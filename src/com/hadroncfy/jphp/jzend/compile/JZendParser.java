@@ -5,7 +5,7 @@ import java.util.Stack;
 
 
 public class JZendParser implements JZendParserConstants {
-    private Compiler cp = null;
+    private JZendCompiler cp = null;
     private int[] state_stack = new int[10];
     private int sp = 0;
     private boolean in_string = false;
@@ -29,7 +29,7 @@ public class JZendParser implements JZendParserConstants {
         this.TopStatementList();
         cp.finishCompiling();
     }
-    public void setCompiler(Compiler c){
+    public void setCompiler(JZendCompiler c){
         this.cp = c;
     }
     private void PushState(int t){
@@ -100,6 +100,13 @@ public class JZendParser implements JZendParserConstants {
       case LCBRACKET:
       case LBBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case UNSET:
       case ECHO:
@@ -153,6 +160,7 @@ public class JZendParser implements JZendParserConstants {
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         ;
         break;
       default:
@@ -161,6 +169,7 @@ public class JZendParser implements JZendParserConstants {
       }
       TopStatement();
     }
+    jj_consume_token(0);
   }
 
   final public void TopStatement() throws ParseException, CompilationException {
@@ -184,7 +193,7 @@ public class JZendParser implements JZendParserConstants {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case IDENTIFIER:
             NameSpaceName();
-                            cp.DoEnterNameSpace($().data);
+                            cp.DoEnterNameSpace((String)$().data);
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
             case EOL:
               jj_consume_token(EOL);
@@ -234,6 +243,13 @@ public class JZendParser implements JZendParserConstants {
           case LCBRACKET:
           case LBBRACKET:
           case NSSEPERATOR:
+          case INT_CAST:
+          case FLOAT_CAST:
+          case STRING_CAST:
+          case ARRAY_CAST:
+          case OBJECT_CAST:
+          case BOOL_CAST:
+          case UNSET_CAST:
           case ARRAY:
           case UNSET:
           case ECHO:
@@ -267,11 +283,6 @@ public class JZendParser implements JZendParserConstants {
           case THROW:
           case NAMESPACE:
           case TRY:
-          case CLASS:
-          case INTERFACE:
-          case FINAL:
-          case ABSTRACT:
-          case TRAIT:
           case DECLARE:
           case CLASS_C:
           case TRAIT_C:
@@ -285,6 +296,7 @@ public class JZendParser implements JZendParserConstants {
           case VARIABLE:
           case DOLLAR:
           case NOMBRE:
+          case INTEGER:
             Statement();
             break;
           default:
@@ -372,6 +384,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -404,11 +423,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -422,6 +436,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       UntickedStatement();
       break;
     default:
@@ -452,11 +467,10 @@ public class JZendParser implements JZendParserConstants {
   }
 
   final public void ConstDeclarationItem() throws ParseException, CompilationException {
-    Token t;
-    t = jj_consume_token(IDENTIFIER);
-
+    ConstName();
     jj_consume_token(ASSIGN);
     Expr();
+                                  cp.DoDeclareConst((String)$().data);
   }
 
   final public void UntickedStatement() throws ParseException, CompilationException {
@@ -503,6 +517,13 @@ public class JZendParser implements JZendParserConstants {
           case LBRACKET:
           case LCBRACKET:
           case NSSEPERATOR:
+          case INT_CAST:
+          case FLOAT_CAST:
+          case STRING_CAST:
+          case ARRAY_CAST:
+          case OBJECT_CAST:
+          case BOOL_CAST:
+          case UNSET_CAST:
           case ARRAY:
           case EMPTY:
           case INCLUDE:
@@ -511,6 +532,7 @@ public class JZendParser implements JZendParserConstants {
           case REQUIRE_ONCE:
           case EVAL:
           case ISSET:
+          case STATIC:
           case NEW:
           case CLONE:
           case FUNCTION:
@@ -519,11 +541,6 @@ public class JZendParser implements JZendParserConstants {
           case LIST:
           case EXIT:
           case NAMESPACE:
-          case CLASS:
-          case INTERFACE:
-          case FINAL:
-          case ABSTRACT:
-          case TRAIT:
           case CLASS_C:
           case TRAIT_C:
           case FUNCTION_C:
@@ -536,6 +553,7 @@ public class JZendParser implements JZendParserConstants {
           case VARIABLE:
           case DOLLAR:
           case NOMBRE:
+          case INTEGER:
             Expr();
             jj_consume_token(EOL);
                        cp.DoReturnOrThrow(0);
@@ -615,6 +633,13 @@ public class JZendParser implements JZendParserConstants {
               case LBRACKET:
               case LCBRACKET:
               case NSSEPERATOR:
+              case INT_CAST:
+              case FLOAT_CAST:
+              case STRING_CAST:
+              case ARRAY_CAST:
+              case OBJECT_CAST:
+              case BOOL_CAST:
+              case UNSET_CAST:
               case ARRAY:
               case EMPTY:
               case INCLUDE:
@@ -623,6 +648,7 @@ public class JZendParser implements JZendParserConstants {
               case REQUIRE_ONCE:
               case EVAL:
               case ISSET:
+              case STATIC:
               case NEW:
               case CLONE:
               case FUNCTION:
@@ -631,11 +657,6 @@ public class JZendParser implements JZendParserConstants {
               case LIST:
               case EXIT:
               case NAMESPACE:
-              case CLASS:
-              case INTERFACE:
-              case FINAL:
-              case ABSTRACT:
-              case TRAIT:
               case CLASS_C:
               case TRAIT_C:
               case FUNCTION_C:
@@ -648,6 +669,7 @@ public class JZendParser implements JZendParserConstants {
               case VARIABLE:
               case DOLLAR:
               case NOMBRE:
+              case INTEGER:
                 Expr();
                 jj_consume_token(EOL);
                                                                           cp.DoBreakOrContinue(0,true);
@@ -678,6 +700,13 @@ public class JZendParser implements JZendParserConstants {
               case LBRACKET:
               case LCBRACKET:
               case NSSEPERATOR:
+              case INT_CAST:
+              case FLOAT_CAST:
+              case STRING_CAST:
+              case ARRAY_CAST:
+              case OBJECT_CAST:
+              case BOOL_CAST:
+              case UNSET_CAST:
               case ARRAY:
               case EMPTY:
               case INCLUDE:
@@ -686,6 +715,7 @@ public class JZendParser implements JZendParserConstants {
               case REQUIRE_ONCE:
               case EVAL:
               case ISSET:
+              case STATIC:
               case NEW:
               case CLONE:
               case FUNCTION:
@@ -694,11 +724,6 @@ public class JZendParser implements JZendParserConstants {
               case LIST:
               case EXIT:
               case NAMESPACE:
-              case CLASS:
-              case INTERFACE:
-              case FINAL:
-              case ABSTRACT:
-              case TRAIT:
               case CLASS_C:
               case TRAIT_C:
               case FUNCTION_C:
@@ -711,6 +736,7 @@ public class JZendParser implements JZendParserConstants {
               case VARIABLE:
               case DOLLAR:
               case NOMBRE:
+              case INTEGER:
                 Expr();
                 jj_consume_token(EOL);
                                                                              cp.DoBreakOrContinue(1,true);
@@ -734,6 +760,13 @@ public class JZendParser implements JZendParserConstants {
             case LBRACKET:
             case LCBRACKET:
             case NSSEPERATOR:
+            case INT_CAST:
+            case FLOAT_CAST:
+            case STRING_CAST:
+            case ARRAY_CAST:
+            case OBJECT_CAST:
+            case BOOL_CAST:
+            case UNSET_CAST:
             case ARRAY:
             case EMPTY:
             case INCLUDE:
@@ -742,6 +775,7 @@ public class JZendParser implements JZendParserConstants {
             case REQUIRE_ONCE:
             case EVAL:
             case ISSET:
+            case STATIC:
             case NEW:
             case CLONE:
             case FUNCTION:
@@ -750,11 +784,6 @@ public class JZendParser implements JZendParserConstants {
             case LIST:
             case EXIT:
             case NAMESPACE:
-            case CLASS:
-            case INTERFACE:
-            case FINAL:
-            case ABSTRACT:
-            case TRAIT:
             case CLASS_C:
             case TRAIT_C:
             case FUNCTION_C:
@@ -767,6 +796,7 @@ public class JZendParser implements JZendParserConstants {
             case VARIABLE:
             case DOLLAR:
             case NOMBRE:
+            case INTEGER:
               Expr();
               jj_consume_token(EOL);
                      cp.DoPop();
@@ -782,9 +812,6 @@ public class JZendParser implements JZendParserConstants {
     }
   }
 
-//void <EOL>:{}{
-//   <EOL> | <EOS>
-//}
   final public void DeclareStatement() throws ParseException, CompilationException {
     jj_consume_token(DECLARE);
     jj_consume_token(LBRACKET);
@@ -807,6 +834,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -840,11 +874,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -858,6 +887,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Statement();
       break;
     case SLICE:
@@ -961,16 +991,18 @@ public class JZendParser implements JZendParserConstants {
   final public void GlobalDeclarationItem() throws ParseException, CompilationException {
     Token t;
     t = jj_consume_token(VARIABLE);
+                     cp.DoGlobal(t.image);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
+                                                          cp.DoFindVariable(t.image,true);
       Expr();
+                                                                                                      cp.doAssign(false);
       break;
     default:
       jj_la1[22] = jj_gen;
       ;
     }
-
   }
 
   final public void StaticDeclarations() throws ParseException, CompilationException {
@@ -1065,6 +1097,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -1098,11 +1137,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -1116,6 +1150,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Statement();
       label_10:
       while (true) {
@@ -1185,6 +1220,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -1218,11 +1260,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -1236,6 +1273,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Statement();
                         cp.DoWhileStatement(2);
       break;
@@ -1295,6 +1333,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -1328,11 +1373,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -1346,6 +1386,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Statement();
                         cp.DoForStatement(3);
       break;
@@ -1371,6 +1412,13 @@ public class JZendParser implements JZendParserConstants {
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case EMPTY:
     case INCLUDE:
@@ -1379,6 +1427,7 @@ public class JZendParser implements JZendParserConstants {
     case REQUIRE_ONCE:
     case EVAL:
     case ISSET:
+    case STATIC:
     case NEW:
     case CLONE:
     case FUNCTION:
@@ -1387,11 +1436,6 @@ public class JZendParser implements JZendParserConstants {
     case LIST:
     case EXIT:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -1404,6 +1448,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Expr();
       label_11:
       while (true) {
@@ -1429,8 +1474,9 @@ public class JZendParser implements JZendParserConstants {
   final public void SwitchStatement() throws ParseException, CompilationException {
     jj_consume_token(SWITCH);
     jj_consume_token(LBRACKET);
+                          cp.DoSwitchStatement(0);
     Expr();
-                                 cp.DoSwitchOrCase(0);
+                                                              cp.DoSwitchStatement(1);
     jj_consume_token(RBRACKET);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SLICE:
@@ -1438,13 +1484,13 @@ public class JZendParser implements JZendParserConstants {
       SwitchBody();
       jj_consume_token(ENDSWITCH);
       jj_consume_token(EOL);
-                                                 cp.DoSwitchOrCase(4);
+                                                 cp.DoSwitchStatement(2);
       break;
     case LBBRACKET:
       jj_consume_token(LBBRACKET);
       SwitchBody();
       jj_consume_token(RBBRACKET);
-                                                 cp.DoSwitchOrCase(4);
+                                                 cp.DoSwitchStatement(2);
       break;
     default:
       jj_la1[34] = jj_gen;
@@ -1474,6 +1520,13 @@ public class JZendParser implements JZendParserConstants {
       case LCBRACKET:
       case LBBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case UNSET:
       case ECHO:
@@ -1509,11 +1562,6 @@ public class JZendParser implements JZendParserConstants {
       case THROW:
       case NAMESPACE:
       case TRY:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case DECLARE:
       case CLASS_C:
       case TRAIT_C:
@@ -1527,6 +1575,7 @@ public class JZendParser implements JZendParserConstants {
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         ;
         break;
       default:
@@ -1540,9 +1589,9 @@ public class JZendParser implements JZendParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CASE:
       jj_consume_token(CASE);
-             { cp.DoSwitchOrCase(1); }
+             { cp.DoSwitchLabel(0); }
       Expr();
-                                                  cp.DoSwitchOrCase(2);
+                                                 cp.DoSwitchLabel(1);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SLICE:
         jj_consume_token(SLICE);
@@ -1570,7 +1619,7 @@ public class JZendParser implements JZendParserConstants {
         jj_consume_token(-1);
         throw new ParseException();
       }
-                                       cp.DoSwitchOrCase(3);
+                                       cp.DoSwitchLabel(2);
       break;
     case INLINEHTML:
     case PSTRING:
@@ -1588,6 +1637,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -1621,11 +1677,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -1639,6 +1690,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       InnerStatement();
       break;
     default:
@@ -1652,7 +1704,7 @@ public class JZendParser implements JZendParserConstants {
     jj_consume_token(FOREACH);
     jj_consume_token(LBRACKET);
     Expr();
-                                  cp.DoForEachStatement(0);
+                                  cp.doForEachStatement(0);
     jj_consume_token(AS);
     ForEachExpr();
     jj_consume_token(RBRACKET);
@@ -1662,7 +1714,7 @@ public class JZendParser implements JZendParserConstants {
       InnerStatementList();
       jj_consume_token(ENDFOREACH);
       jj_consume_token(EOL);
-                                                          cp.DoForEachStatement(2);
+                                                          cp.doForEachStatement(1);
       break;
     case INLINEHTML:
     case PSTRING:
@@ -1680,6 +1732,13 @@ public class JZendParser implements JZendParserConstants {
     case LCBRACKET:
     case LBBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case UNSET:
     case ECHO:
@@ -1713,11 +1772,6 @@ public class JZendParser implements JZendParserConstants {
     case THROW:
     case NAMESPACE:
     case TRY:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case DECLARE:
     case CLASS_C:
     case TRAIT_C:
@@ -1731,8 +1785,9 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Statement();
-                        cp.DoForEachStatement(2);
+                        cp.doForEachStatement(1);
       break;
     default:
       jj_la1[39] = jj_gen;
@@ -1742,23 +1797,107 @@ public class JZendParser implements JZendParserConstants {
   }
 
   final public void ForEachExpr() throws ParseException, CompilationException {
-    boolean r = false;
+    boolean r1 = false,r2 = false;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case BITAND:
+      jj_consume_token(BITAND);
+                 r1 = true;
+      break;
+    default:
+      jj_la1[40] = jj_gen;
+      ;
+    }
+    AtomicExpr();
+                                               cp.doForEachFirstExpr(r1);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case DOUBLEARROW:
+      jj_consume_token(DOUBLEARROW);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case PSTRING:
+      case BEGIN_OF_SSTRING:
+      case HEREDOC_ENTRY:
+      case BITAND:
+      case LBRACKET:
+      case LCBRACKET:
+      case NSSEPERATOR:
+      case ARRAY:
+      case STATIC:
+      case FUNCTION:
+      case NAMESPACE:
+      case CLASS_C:
+      case TRAIT_C:
+      case FUNCTION_C:
+      case METHOD_C:
+      case LINE_C:
+      case FILE_C:
+      case DIR_C:
+      case NAMESPACE_C:
+      case IDENTIFIER:
+      case VARIABLE:
+      case DOLLAR:
+      case NOMBRE:
+      case INTEGER:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case BITAND:
+          jj_consume_token(BITAND);
+                                     r2 = true;
+          break;
+        default:
+          jj_la1[41] = jj_gen;
+          ;
+        }
+        AtomicExpr();
+        break;
+      default:
+        jj_la1[42] = jj_gen;
+        ;
+      }
+                                                                     cp.doForEachSecondExpr(r2);
+      break;
+    default:
+      jj_la1[43] = jj_gen;
+      ;
+    }
+  }
+
+  final public void TryCatchStatement() throws ParseException, CompilationException {
+    jj_consume_token(TRY);
+    jj_consume_token(LBBRACKET);
+                        cp.DoBeginTry();
+    InnerStatementList();
+    jj_consume_token(RBBRACKET);
+    CatchItem(true);
+    label_13:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CATCH:
+        ;
+        break;
+      default:
+        jj_la1[44] = jj_gen;
+        break label_13;
+      }
+      CatchItem(false);
+    }
+                                            cp.DoEndTryCatchBlock();
+  }
+
+  final public void CatchItem(boolean is_first) throws ParseException, CompilationException {
+    Token t;
+    String typename = "";
+    jj_consume_token(CATCH);
+    jj_consume_token(LBRACKET);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case PSTRING:
     case BEGIN_OF_SSTRING:
     case HEREDOC_ENTRY:
-    case BITAND:
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
     case ARRAY:
+    case STATIC:
     case FUNCTION:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -1771,81 +1910,20 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case BITAND:
-        jj_consume_token(BITAND);
-                   r = true;
-        break;
-      default:
-        jj_la1[40] = jj_gen;
-        ;
-      }
-                                   cp.DoDup();cp.DoRequestArrayPointerItem(true);
-      AtomicExpr();
-                                                                                                   cp.convertRvalueToLvalue();cp.DoSwitch();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case DOUBLEARROW:
-        jj_consume_token(DOUBLEARROW);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case BITAND:
-          jj_consume_token(BITAND);
-          break;
-        default:
-          jj_la1[41] = jj_gen;
-                                     cp.DoDereference();
-        }
-        AtomicExpr();
-                                                                            cp.convertRvalueToLvalue();cp.DoAssign(false,true);cp.DoPop();cp.DoSwitch();if(!r)cp.DoDereference();cp.DoAssign(false,false);cp.DoPop();
-        break;
-      default:
-        jj_la1[42] = jj_gen;
-            if(!r)cp.DoDereference();cp.DoAssign(false,false);cp.DoPop();cp.DoPop();
-      }
-      break;
-    case LIST:
-      jj_consume_token(LIST);
-      jj_consume_token(LBRACKET);
-      AssignmentList();
-      jj_consume_token(RBRACKET);
-                                                       cp.DoAssign(true,true);cp.DoPop();
+    case INTEGER:
+      ClassNameReference();
+                                                typename = (String)$().data;
       break;
     default:
-      jj_la1[43] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+      jj_la1[45] = jj_gen;
+      ;
     }
-  }
-
-  final public void TryCatchStatement() throws ParseException, CompilationException {
-    jj_consume_token(TRY);
-    jj_consume_token(LBBRACKET);
-    InnerStatementList();
-    jj_consume_token(RBBRACKET);
-    label_13:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case CATCH:
-        ;
-        break;
-      default:
-        jj_la1[44] = jj_gen;
-        break label_13;
-      }
-      CatchItem();
-    }
-  }
-
-  final public void CatchItem() throws ParseException, CompilationException {
-    Token t;
-    jj_consume_token(CATCH);
-    jj_consume_token(LBRACKET);
-    FullyQualifiedClassName();
     t = jj_consume_token(VARIABLE);
     jj_consume_token(RBRACKET);
     jj_consume_token(LBBRACKET);
+                   cp.DoCatchBlock(is_first,t.image,typename);
     InnerStatementList();
     jj_consume_token(RBBRACKET);
-
   }
 
   final public void ClassDeclaration() throws ParseException, CompilationException {
@@ -1875,7 +1953,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[45] = jj_gen;
+        jj_la1[46] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1888,7 +1966,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[46] = jj_gen;
+        jj_la1[47] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1898,7 +1976,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[47] = jj_gen;
+        jj_la1[48] = jj_gen;
         ;
       }
       jj_consume_token(LBBRACKET);
@@ -1915,7 +1993,7 @@ public class JZendParser implements JZendParserConstants {
       jj_consume_token(RBBRACKET);
       break;
     default:
-      jj_la1[48] = jj_gen;
+      jj_la1[49] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1930,7 +2008,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[49] = jj_gen;
+        jj_la1[50] = jj_gen;
         break label_14;
       }
       jj_consume_token(CAMMA);
@@ -1945,7 +2023,7 @@ public class JZendParser implements JZendParserConstants {
       InterfaceList();
       break;
     default:
-      jj_la1[50] = jj_gen;
+      jj_la1[51] = jj_gen;
       ;
     }
   }
@@ -1959,7 +2037,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[51] = jj_gen;
+        jj_la1[52] = jj_gen;
         break label_15;
       }
       jj_consume_token(CAMMA);
@@ -1985,7 +2063,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[52] = jj_gen;
+        jj_la1[53] = jj_gen;
         break label_16;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2005,7 +2083,7 @@ public class JZendParser implements JZendParserConstants {
         TraitUseStatement();
         break;
       default:
-        jj_la1[53] = jj_gen;
+        jj_la1[54] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2027,7 +2105,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[54] = jj_gen;
+        jj_la1[55] = jj_gen;
         break label_17;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2041,7 +2119,7 @@ public class JZendParser implements JZendParserConstants {
           jj_consume_token(VAR);
           break;
         default:
-          jj_la1[55] = jj_gen;
+          jj_la1[56] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -2067,7 +2145,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[56] = jj_gen;
+        jj_la1[57] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2082,7 +2160,7 @@ public class JZendParser implements JZendParserConstants {
           ;
           break;
         default:
-          jj_la1[57] = jj_gen;
+          jj_la1[58] = jj_gen;
           break label_18;
         }
         jj_consume_token(CAMMA);
@@ -2099,7 +2177,7 @@ public class JZendParser implements JZendParserConstants {
           ;
           break;
         default:
-          jj_la1[58] = jj_gen;
+          jj_la1[59] = jj_gen;
           break label_19;
         }
         jj_consume_token(CAMMA);
@@ -2111,7 +2189,7 @@ public class JZendParser implements JZendParserConstants {
       MethodMember();
       break;
     default:
-      jj_la1[59] = jj_gen;
+      jj_la1[60] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2132,7 +2210,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[60] = jj_gen;
+        jj_la1[61] = jj_gen;
         break label_20;
       }
       jj_consume_token(CAMMA);
@@ -2151,7 +2229,7 @@ public class JZendParser implements JZendParserConstants {
       jj_consume_token(RBBRACKET);
       break;
     default:
-      jj_la1[61] = jj_gen;
+      jj_la1[62] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2167,7 +2245,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[62] = jj_gen;
+        jj_la1[63] = jj_gen;
         break label_21;
       }
       if (jj_2_7(2147483647)) {
@@ -2184,7 +2262,7 @@ public class JZendParser implements JZendParserConstants {
           jj_consume_token(EOL);
           break;
         default:
-          jj_la1[63] = jj_gen;
+          jj_la1[64] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -2199,7 +2277,7 @@ public class JZendParser implements JZendParserConstants {
           jj_consume_token(EOL);
           break;
         default:
-          jj_la1[64] = jj_gen;
+          jj_la1[65] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -2227,7 +2305,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[65] = jj_gen;
+        jj_la1[66] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2237,7 +2315,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[66] = jj_gen;
+        jj_la1[67] = jj_gen;
         ;
       }
       break;
@@ -2246,7 +2324,7 @@ public class JZendParser implements JZendParserConstants {
 
       break;
     default:
-      jj_la1[67] = jj_gen;
+      jj_la1[68] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2271,7 +2349,7 @@ public class JZendParser implements JZendParserConstants {
 
         break;
       default:
-        jj_la1[68] = jj_gen;
+        jj_la1[69] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2287,7 +2365,7 @@ public class JZendParser implements JZendParserConstants {
       Expr();
       break;
     default:
-      jj_la1[69] = jj_gen;
+      jj_la1[70] = jj_gen;
       ;
     }
 
@@ -2303,7 +2381,7 @@ public class JZendParser implements JZendParserConstants {
       Expr();
       break;
     default:
-      jj_la1[70] = jj_gen;
+      jj_la1[71] = jj_gen;
       ;
     }
 
@@ -2319,7 +2397,7 @@ public class JZendParser implements JZendParserConstants {
 
       break;
     default:
-      jj_la1[71] = jj_gen;
+      jj_la1[72] = jj_gen;
       ;
     }
     t = jj_consume_token(IDENTIFIER);
@@ -2338,7 +2416,7 @@ public class JZendParser implements JZendParserConstants {
       jj_consume_token(RBBRACKET);
       break;
     default:
-      jj_la1[72] = jj_gen;
+      jj_la1[73] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2364,6 +2442,13 @@ public class JZendParser implements JZendParserConstants {
       case LCBRACKET:
       case LBBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case UNSET:
       case ECHO:
@@ -2397,11 +2482,6 @@ public class JZendParser implements JZendParserConstants {
       case THROW:
       case NAMESPACE:
       case TRY:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case DECLARE:
       case CLASS_C:
       case TRAIT_C:
@@ -2415,10 +2495,11 @@ public class JZendParser implements JZendParserConstants {
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         ;
         break;
       default:
-        jj_la1[73] = jj_gen;
+        jj_la1[74] = jj_gen;
         break label_22;
       }
       Statement();
@@ -2438,7 +2519,7 @@ public class JZendParser implements JZendParserConstants {
       jj_consume_token(RBRACKET);
       jj_consume_token(ASSIGN);
       Expr();
-                                                                    cp.DoAssign(true,false);
+                                                                    cp.doAssign(true);
       break;
     case PSTRING:
     case BEGIN_OF_SSTRING:
@@ -2453,6 +2534,13 @@ public class JZendParser implements JZendParserConstants {
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case EMPTY:
     case INCLUDE:
@@ -2461,6 +2549,7 @@ public class JZendParser implements JZendParserConstants {
     case REQUIRE_ONCE:
     case EVAL:
     case ISSET:
+    case STATIC:
     case NEW:
     case CLONE:
     case FUNCTION:
@@ -2468,11 +2557,6 @@ public class JZendParser implements JZendParserConstants {
     case PRINT:
     case EXIT:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -2485,6 +2569,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       ConditionalExpr();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ASSIGN:
@@ -2504,87 +2589,87 @@ public class JZendParser implements JZendParserConstants {
           jj_consume_token(ASSIGN);
                    cp.convertRvalueToLvalue();
           Expr();
-                                                          cp.DoAssign(false,false);
+                                                          cp.doAssign(false);
           break;
         case ASSIGNPLUS:
           jj_consume_token(ASSIGNPLUS);
                          cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                              cp.DoBinaryOptr(PLUS);cp.DoAssign(false,false);
+                                                                                              cp.DoBinaryOptr(PLUS);cp.doAssign(false);
           break;
         case ASSIGNMINUS:
           jj_consume_token(ASSIGNMINUS);
                           cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(MINUS);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(MINUS);cp.doAssign(false);
           break;
         case ASSIGNTIMES:
           jj_consume_token(ASSIGNTIMES);
                           cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                              cp.DoBinaryOptr(TIMES);cp.DoAssign(false,false);
+                                                                                              cp.DoBinaryOptr(TIMES);cp.doAssign(false);
           break;
         case ASSIGNDIVIDE:
           jj_consume_token(ASSIGNDIVIDE);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(DIVIDE);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(DIVIDE);cp.doAssign(false);
           break;
         case ASSIGNMOD:
           jj_consume_token(ASSIGNMOD);
                         cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                            cp.DoBinaryOptr(MOD);cp.DoAssign(false,false);
+                                                                                            cp.DoBinaryOptr(MOD);cp.doAssign(false);
           break;
         case ASSIGNCONCAT:
           jj_consume_token(ASSIGNCONCAT);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(CONCAT);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(CONCAT);cp.doAssign(false);
           break;
         case ASSIGNBITAND:
           jj_consume_token(ASSIGNBITAND);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(BITAND);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(BITAND);cp.doAssign(false);
           break;
         case ASSIGNBITOR:
           jj_consume_token(ASSIGNBITOR);
                           cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                              cp.DoBinaryOptr(BITOR);cp.DoAssign(false,false);
+                                                                                              cp.DoBinaryOptr(BITOR);cp.doAssign(false);
           break;
         case ASSIGNBITXOR:
           jj_consume_token(ASSIGNBITXOR);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(BITXOR);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(BITXOR);cp.doAssign(false);
           break;
         case ASSIGNLSHIFT:
           jj_consume_token(ASSIGNLSHIFT);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(LSHIFT);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(LSHIFT);cp.doAssign(false);
           break;
         case ASSIGNRSHIFT:
           jj_consume_token(ASSIGNRSHIFT);
                            cp.convertRvalueToLvalue();cp.DoDup();cp.DoDereference();
           Expr();
-                                                                                               cp.DoBinaryOptr(RSHIFT);cp.DoAssign(false,false);
+                                                                                               cp.DoBinaryOptr(RSHIFT);cp.doAssign(false);
           break;
         default:
-          jj_la1[74] = jj_gen;
+          jj_la1[75] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[75] = jj_gen;
+        jj_la1[76] = jj_gen;
         ;
       }
       break;
     default:
-      jj_la1[76] = jj_gen;
+      jj_la1[77] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2600,7 +2685,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[77] = jj_gen;
+        jj_la1[78] = jj_gen;
         break label_23;
       }
       jj_consume_token(CAMMA);
@@ -2623,6 +2708,13 @@ public class JZendParser implements JZendParserConstants {
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case EMPTY:
     case INCLUDE:
@@ -2631,6 +2723,7 @@ public class JZendParser implements JZendParserConstants {
     case REQUIRE_ONCE:
     case EVAL:
     case ISSET:
+    case STATIC:
     case NEW:
     case CLONE:
     case FUNCTION:
@@ -2638,11 +2731,6 @@ public class JZendParser implements JZendParserConstants {
     case PRINT:
     case EXIT:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -2655,6 +2743,7 @@ public class JZendParser implements JZendParserConstants {
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       UnaryExpr();
                   cp.convertRvalueToLvalue();cp.DoAddArrayItem(false);
       break;
@@ -2663,7 +2752,7 @@ public class JZendParser implements JZendParserConstants {
       AssignmentList();
       break;
     default:
-      jj_la1[78] = jj_gen;
+      jj_la1[79] = jj_gen;
         cp.DoNull();cp.DoAddArrayItem(false);
     }
   }
@@ -2673,11 +2762,8 @@ public class JZendParser implements JZendParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EAR:
       jj_consume_token(EAR);
+                cp.DoConditionalExpr(0);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case SLICE:
-        jj_consume_token(SLICE);
-        ConditionalExpr();
-        break;
       case PSTRING:
       case BEGIN_OF_SSTRING:
       case HEREDOC_ENTRY:
@@ -2691,6 +2777,13 @@ public class JZendParser implements JZendParserConstants {
       case LBRACKET:
       case LCBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case EMPTY:
       case INCLUDE:
@@ -2699,6 +2792,7 @@ public class JZendParser implements JZendParserConstants {
       case REQUIRE_ONCE:
       case EVAL:
       case ISSET:
+      case STATIC:
       case NEW:
       case CLONE:
       case FUNCTION:
@@ -2706,11 +2800,6 @@ public class JZendParser implements JZendParserConstants {
       case PRINT:
       case EXIT:
       case NAMESPACE:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case CLASS_C:
       case TRAIT_C:
       case FUNCTION_C:
@@ -2723,25 +2812,27 @@ public class JZendParser implements JZendParserConstants {
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         BinaryExpr();
-        jj_consume_token(SLICE);
-        ConditionalExpr();
         break;
       default:
-        jj_la1[79] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
+        jj_la1[80] = jj_gen;
+        ;
       }
+                                                              cp.DoConditionalExpr(1);
+      jj_consume_token(SLICE);
+      ConditionalExpr();
+                                                                                                                     cp.DoConditionalExpr(2);
       break;
     default:
-      jj_la1[80] = jj_gen;
+      jj_la1[81] = jj_gen;
       ;
     }
   }
 
   final public void BinaryExpr() throws ParseException, CompilationException {
     Token t;
-    Stack<Token> ts = new Stack<Token>();
+    Stack<Token> ts = null;
     UnaryExpr();
     label_24:
     while (true) {
@@ -2771,7 +2862,7 @@ public class JZendParser implements JZendParserConstants {
         ;
         break;
       default:
-        jj_la1[81] = jj_gen;
+        jj_la1[82] = jj_gen;
         break label_24;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2842,10 +2933,11 @@ public class JZendParser implements JZendParserConstants {
         t = jj_consume_token(MOD);
         break;
       default:
-        jj_la1[82] = jj_gen;
+        jj_la1[83] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
+            ts = new Stack<Token>();
             int p1 = getBinaryOptrPriority(t.kind);
             if(ts.empty()){
                 ts.push(t);
@@ -2863,7 +2955,7 @@ public class JZendParser implements JZendParserConstants {
             }
       UnaryExpr();
     }
-        while(!ts.empty()){
+        while(ts != null && !ts.empty()){
             cp.DoBinaryOptr(ts.pop().kind);
         }
   }
@@ -2955,7 +3047,6 @@ void MultiplicativeExpr():
     case PLUS:
       jj_consume_token(PLUS);
       UnaryExpr();
-                          cp.DoUnaryOptr(PLUS);
       break;
     case MINUS:
       jj_consume_token(MINUS);
@@ -2975,7 +3066,7 @@ void MultiplicativeExpr():
     case NOT:
       jj_consume_token(NOT);
       UnaryExpr();
-                          cp.DoUnaryOptr(PLUS);
+                          cp.DoUnaryOptr(NOT);
       break;
     case BITAND:
       jj_consume_token(BITAND);
@@ -3011,121 +3102,116 @@ void MultiplicativeExpr():
       ExitExpr();
                           cp.DoExit();
       break;
-    default:
-      jj_la1[85] = jj_gen;
-      if (jj_2_9(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(INT);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_10(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(FLOAT);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_11(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(STRING);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_12(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(ARRAY);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_13(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(OBJECT);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_14(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(BOOL);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else if (jj_2_15(2147483647)) {
-        jj_consume_token(LBRACKET);
-        jj_consume_token(UNSET);
-        jj_consume_token(RBRACKET);
-        UnaryExpr();
-      } else {
+    case INT_CAST:
+      jj_consume_token(INT_CAST);
+      UnaryExpr();
+      break;
+    case FLOAT_CAST:
+      jj_consume_token(FLOAT_CAST);
+      UnaryExpr();
+      break;
+    case STRING_CAST:
+      jj_consume_token(STRING_CAST);
+      UnaryExpr();
+      break;
+    case ARRAY_CAST:
+      jj_consume_token(ARRAY_CAST);
+      UnaryExpr();
+      break;
+    case OBJECT_CAST:
+      jj_consume_token(OBJECT_CAST);
+      UnaryExpr();
+      break;
+    case BOOL_CAST:
+      jj_consume_token(BOOL_CAST);
+      UnaryExpr();
+      break;
+    case UNSET_CAST:
+      jj_consume_token(UNSET_CAST);
+      UnaryExpr();
+      break;
+    case PSTRING:
+    case BEGIN_OF_SSTRING:
+    case HEREDOC_ENTRY:
+    case LBRACKET:
+    case LCBRACKET:
+    case NSSEPERATOR:
+    case ARRAY:
+    case STATIC:
+    case FUNCTION:
+    case NAMESPACE:
+    case CLASS_C:
+    case TRAIT_C:
+    case FUNCTION_C:
+    case METHOD_C:
+    case LINE_C:
+    case FILE_C:
+    case DIR_C:
+    case NAMESPACE_C:
+    case IDENTIFIER:
+    case VARIABLE:
+    case DOLLAR:
+    case NOMBRE:
+    case INTEGER:
+      AtomicExpr();
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case INC:
+      case DEC:
+      case INSTANCEOF:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case PSTRING:
-        case BEGIN_OF_SSTRING:
-        case HEREDOC_ENTRY:
-        case LBRACKET:
-        case LCBRACKET:
-        case NSSEPERATOR:
-        case ARRAY:
-        case FUNCTION:
-        case NAMESPACE:
-        case CLASS:
-        case INTERFACE:
-        case FINAL:
-        case ABSTRACT:
-        case TRAIT:
-        case CLASS_C:
-        case TRAIT_C:
-        case FUNCTION_C:
-        case METHOD_C:
-        case LINE_C:
-        case FILE_C:
-        case DIR_C:
-        case NAMESPACE_C:
-        case IDENTIFIER:
-        case VARIABLE:
-        case DOLLAR:
-        case NOMBRE:
-          AtomicExpr();
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case INC:
-          case DEC:
-          case INSTANCEOF:
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case INC:
-              jj_consume_token(INC);
+        case INC:
+          jj_consume_token(INC);
                              cp.convertRvalueToLvalue();cp.DoPostIncOrDec(false);
-              break;
-            case DEC:
-              jj_consume_token(DEC);
-                                                                                              cp.convertRvalueToLvalue();cp.DoPostIncOrDec(true);
-              break;
-            case INSTANCEOF:
-              jj_consume_token(INSTANCEOF);
-              ClassNameReference();
-              break;
-            default:
-              jj_la1[83] = jj_gen;
-              jj_consume_token(-1);
-              throw new ParseException();
-            }
-            break;
-          default:
-            jj_la1[84] = jj_gen;
-            ;
-          }
           break;
-        case EMPTY:
-        case INCLUDE:
-        case INCLUDE_ONCE:
-        case REQUIRE:
-        case REQUIRE_ONCE:
-        case EVAL:
-        case ISSET:
-          InternalFunctions();
+        case DEC:
+          jj_consume_token(DEC);
+                                                                                              cp.convertRvalueToLvalue();cp.DoPostIncOrDec(true);
+          break;
+        case INSTANCEOF:
+          jj_consume_token(INSTANCEOF);
+          ClassNameReference();
+                                                                                                                                                                                          cp.DoFindClass((String)$().data);cp.DoInstanceOf();
           break;
         default:
-          jj_la1[86] = jj_gen;
+          jj_la1[84] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
+        break;
+      default:
+        jj_la1[85] = jj_gen;
+        ;
       }
+      break;
+    case EMPTY:
+    case INCLUDE:
+    case INCLUDE_ONCE:
+    case REQUIRE:
+    case REQUIRE_ONCE:
+    case EVAL:
+    case ISSET:
+      InternalFunctions();
+      break;
+    default:
+      jj_la1[86] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
   }
 
   final public void NewExpr() throws ParseException, CompilationException {
     Token t;
-    t = jj_consume_token(IDENTIFIER);
+    ClassNameReference();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case LBRACKET:
+      jj_consume_token(LBRACKET);
+      ArgList();
+      jj_consume_token(RBRACKET);
+      break;
+    default:
+      jj_la1[87] = jj_gen;
+            cp.DoPackArg(0);
+    }
   }
 
   final public void ExitExpr() throws ParseException, CompilationException {
@@ -3146,6 +3232,13 @@ void MultiplicativeExpr():
       case LBRACKET:
       case LCBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case EMPTY:
       case INCLUDE:
@@ -3154,6 +3247,7 @@ void MultiplicativeExpr():
       case REQUIRE_ONCE:
       case EVAL:
       case ISSET:
+      case STATIC:
       case NEW:
       case CLONE:
       case FUNCTION:
@@ -3162,11 +3256,6 @@ void MultiplicativeExpr():
       case LIST:
       case EXIT:
       case NAMESPACE:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case CLASS_C:
       case TRAIT_C:
       case FUNCTION_C:
@@ -3179,22 +3268,23 @@ void MultiplicativeExpr():
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         Expr();
         jj_consume_token(RBRACKET);
         break;
       case RBRACKET:
         jj_consume_token(RBRACKET);
-                                                  cp.DoNombre(0);
+                                                  cp.DoNombre(0,true);
         break;
       default:
-        jj_la1[87] = jj_gen;
+        jj_la1[88] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[88] = jj_gen;
-        cp.DoNombre(0);
+      jj_la1[89] = jj_gen;
+        cp.DoNombre(0,true);
     }
   }
 
@@ -3210,7 +3300,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[89] = jj_gen;
+        jj_la1[90] = jj_gen;
         break label_25;
       }
       Trailer();
@@ -3242,6 +3332,13 @@ void MultiplicativeExpr():
       case LBRACKET:
       case LCBRACKET:
       case NSSEPERATOR:
+      case INT_CAST:
+      case FLOAT_CAST:
+      case STRING_CAST:
+      case ARRAY_CAST:
+      case OBJECT_CAST:
+      case BOOL_CAST:
+      case UNSET_CAST:
       case ARRAY:
       case EMPTY:
       case INCLUDE:
@@ -3250,6 +3347,7 @@ void MultiplicativeExpr():
       case REQUIRE_ONCE:
       case EVAL:
       case ISSET:
+      case STATIC:
       case NEW:
       case CLONE:
       case FUNCTION:
@@ -3258,11 +3356,6 @@ void MultiplicativeExpr():
       case LIST:
       case EXIT:
       case NAMESPACE:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case CLASS_C:
       case TRAIT_C:
       case FUNCTION_C:
@@ -3275,6 +3368,7 @@ void MultiplicativeExpr():
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
+      case INTEGER:
         Expr();
         jj_consume_token(RCBRACKET);
                              cp.DoSubscript(false);
@@ -3284,7 +3378,7 @@ void MultiplicativeExpr():
                         cp.DoSubscript(true);
         break;
       default:
-        jj_la1[90] = jj_gen;
+        jj_la1[91] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3298,10 +3392,9 @@ void MultiplicativeExpr():
     case ARROW:
       jj_consume_token(ARROW);
       ObjectMember();
-                               cp.DoRequestMember();
       break;
     default:
-      jj_la1[91] = jj_gen;
+      jj_la1[92] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3314,51 +3407,122 @@ void MultiplicativeExpr():
     case DOLLAR:
       Variable();
       break;
-    default:
-      jj_la1[92] = jj_gen;
-      if (jj_2_16(2)) {
-        Constant();
-      } else {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case PSTRING:
-        case BEGIN_OF_SSTRING:
-        case HEREDOC_ENTRY:
-          String();
-          break;
-        case LBRACKET:
-          jj_consume_token(LBRACKET);
-          Expr();
-          jj_consume_token(RBRACKET);
-          break;
-        case ARRAY:
-          jj_consume_token(ARRAY);
-          jj_consume_token(LBRACKET);
+    case NSSEPERATOR:
+    case STATIC:
+    case NAMESPACE:
+    case CLASS_C:
+    case TRAIT_C:
+    case FUNCTION_C:
+    case METHOD_C:
+    case LINE_C:
+    case FILE_C:
+    case DIR_C:
+    case NAMESPACE_C:
+    case IDENTIFIER:
+    case NOMBRE:
+    case INTEGER:
+      ClassMemberAndConst();
+      break;
+    case PSTRING:
+    case BEGIN_OF_SSTRING:
+    case HEREDOC_ENTRY:
+      String();
+      break;
+    case LBRACKET:
+      jj_consume_token(LBRACKET);
+      Expr();
+      jj_consume_token(RBRACKET);
+      break;
+    case ARRAY:
+      jj_consume_token(ARRAY);
+      jj_consume_token(LBRACKET);
                            cp.DoNewArray();
-          ArrayBody();
-          jj_consume_token(RBRACKET);
-          break;
-        case LCBRACKET:
-          jj_consume_token(LCBRACKET);
+      ArrayBody();
+      jj_consume_token(RBRACKET);
+      break;
+    case LCBRACKET:
+      jj_consume_token(LCBRACKET);
                     cp.DoNewArray();
-          ArrayBody();
-          jj_consume_token(RCBRACKET);
-          break;
-        case FUNCTION:
-          AnonymousFunction();
-          break;
-        case CLASS:
-        case INTERFACE:
-        case FINAL:
-        case ABSTRACT:
-        case TRAIT:
-          AnonymousClass();
-          break;
-        default:
-          jj_la1[93] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
+      ArrayBody();
+      jj_consume_token(RCBRACKET);
+      break;
+    case FUNCTION:
+      AnonymousFunction();
+      break;
+    default:
+      jj_la1[93] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void ClassMemberAndConst() throws ParseException, CompilationException {
+    boolean hasmember = false;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case NSSEPERATOR:
+    case NAMESPACE:
+    case IDENTIFIER:
+      ConstName();
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case DOUBLESLICE:
+        jj_consume_token(DOUBLESLICE);
+                                  cp.doFetchClass((String)$().data);hasmember = true;
+        ClassMember();
+                                                                                                        hasmember = true;
+        break;
+      default:
+        jj_la1[94] = jj_gen;
+        ;
       }
+      if (jj_2_9(2147483647)) {
+                                  if(!hasmember)cp.DoFindFunction((String)$().data);
+      } else {
+            if(!hasmember)cp.DoFindConst((String)$().data);
+      }
+      break;
+    case STATIC:
+      jj_consume_token(STATIC);
+      jj_consume_token(DOUBLESLICE);
+      ClassMember();
+      break;
+    case CLASS_C:
+    case TRAIT_C:
+    case FUNCTION_C:
+    case METHOD_C:
+    case LINE_C:
+    case FILE_C:
+    case DIR_C:
+    case NAMESPACE_C:
+    case NOMBRE:
+    case INTEGER:
+      Constant();
+      break;
+    default:
+      jj_la1[95] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void ClassMember() throws ParseException, CompilationException {
+    Token t;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case VARIABLE:
+      t = jj_consume_token(VARIABLE);
+                     cp.DoString(t.image);cp.doFindClassVar(false);
+      break;
+    case IDENTIFIER:
+      t = jj_consume_token(IDENTIFIER);
+      if (jj_2_10(2147483647)) {
+                                  cp.doFindClassFunction(t.image);
+      } else {
+            cp.doFindClassConst(t.image);
+      }
+      break;
+    default:
+      jj_la1[96] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
   }
 
@@ -3376,7 +3540,7 @@ void MultiplicativeExpr():
       HereDoc();
       break;
     default:
-      jj_la1[94] = jj_gen;
+      jj_la1[97] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3398,7 +3562,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[95] = jj_gen;
+        jj_la1[98] = jj_gen;
         break label_26;
       }
       EcapedVar();
@@ -3440,7 +3604,7 @@ void MultiplicativeExpr():
         }
         break;
       default:
-        jj_la1[96] = jj_gen;
+        jj_la1[99] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3455,7 +3619,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[97] = jj_gen;
+        jj_la1[100] = jj_gen;
         break label_27;
       }
     }
@@ -3467,7 +3631,7 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE_IN_STRING:
       t = jj_consume_token(VARIABLE_IN_STRING);
-                               cp.DoFindVariable(t.image);cp.DoToString();
+                               cp.DoFindVariable(t.image,false);cp.DoToString();
       break;
     case OTHERS_IN_STRING:
       t = jj_consume_token(OTHERS_IN_STRING);
@@ -3478,7 +3642,7 @@ void MultiplicativeExpr():
                                 s = token_source.curLexState;SwitchTo(IN_SCRIPTING);
       Expr();
       jj_consume_token(RBBRACKET);
-                                                                                                            SwitchTo(s);cp.DoFindVariableByName();cp.DoToString();
+                                                                                                            SwitchTo(s);cp.DoFindVariableByName(false);cp.DoToString();
       break;
     case EXPR_IN_STRING:
       jj_consume_token(EXPR_IN_STRING);
@@ -3489,10 +3653,10 @@ void MultiplicativeExpr():
       break;
     case ARRAY_IN_STRING:
       t = jj_consume_token(ARRAY_IN_STRING);
-                              cp.DoFindVariable(t.image);s = token_source.curLexState;SwitchTo(IN_SCRIPTING);
+                              cp.DoFindVariable(t.image,false);s = token_source.curLexState;SwitchTo(IN_SCRIPTING);
       Expr();
       jj_consume_token(RCBRACKET);
-                                                                                                                                     SwitchTo(s);cp.DoSubscript(false);cp.DoToString();
+                                                                                                                                           SwitchTo(s);cp.DoSubscript(false);cp.DoToString();
       break;
     case PROPERTY_IN_STRING:
       t = jj_consume_token(PROPERTY_IN_STRING);
@@ -3500,13 +3664,13 @@ void MultiplicativeExpr():
         int b = t.image.length();
         String vname = t.image.substring(1,a);
         String property = t.image.substring(a + 2,b - 1);
-        cp.DoFindVariable(vname);
+        cp.DoFindVariable(vname,false);
         cp.DoString(property);
-        cp.DoRequestMember();
+        cp.DoRequestMember(false);
         cp.DoToString();
       break;
     default:
-      jj_la1[98] = jj_gen;
+      jj_la1[101] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3517,7 +3681,11 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NOMBRE:
       t = jj_consume_token(NOMBRE);
-                   cp.DoNombre(Double.parseDouble(t.image));
+                   cp.DoNombre(Double.parseDouble(t.image),false);
+      break;
+    case INTEGER:
+      t = jj_consume_token(INTEGER);
+                      cp.DoNombre(Integer.parseInt(t.image),true);
       break;
     case CLASS_C:
       jj_consume_token(CLASS_C);
@@ -3544,26 +3712,8 @@ void MultiplicativeExpr():
       jj_consume_token(NAMESPACE_C);
                       cp.DoString(cp.getCurrentNameSpace());
       break;
-    case NSSEPERATOR:
-    case NAMESPACE:
-    case IDENTIFIER:
-      ConstName();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case DOUBLESLICE:
-        jj_consume_token(DOUBLESLICE);
-        Atom();
-        break;
-      default:
-        jj_la1[99] = jj_gen;
-        if (jj_2_17(2147483647)) {
-                                    cp.DoFindFunction("\u005c\u005c" + $().data);
-        } else {
-            cp.DoFindConst("\u005c\u005c" + $().data);
-        }
-      }
-      break;
     default:
-      jj_la1[100] = jj_gen;
+      jj_la1[102] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3579,7 +3729,7 @@ void MultiplicativeExpr():
 
       break;
     default:
-      jj_la1[101] = jj_gen;
+      jj_la1[103] = jj_gen;
       ;
     }
     jj_consume_token(LBRACKET);
@@ -3604,7 +3754,7 @@ void MultiplicativeExpr():
           ;
           break;
         default:
-          jj_la1[102] = jj_gen;
+          jj_la1[104] = jj_gen;
           break label_28;
         }
         jj_consume_token(CAMMA);
@@ -3613,23 +3763,25 @@ void MultiplicativeExpr():
       jj_consume_token(RBRACKET);
       break;
     default:
-      jj_la1[103] = jj_gen;
+      jj_la1[105] = jj_gen;
       ;
     }
   }
 
   final public void ScopeUseListItem() throws ParseException, CompilationException {
     Token t;
+    boolean is_ref = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BITAND:
       jj_consume_token(BITAND);
-
+                 is_ref = true;
       break;
     default:
-      jj_la1[104] = jj_gen;
+      jj_la1[106] = jj_gen;
       ;
     }
     t = jj_consume_token(VARIABLE);
+                                                     cp.doFunctionUse(t.image,is_ref);
   }
 
   final public void AnonymousClass() throws ParseException, CompilationException {
@@ -3658,7 +3810,7 @@ void MultiplicativeExpr():
 
         break;
       default:
-        jj_la1[105] = jj_gen;
+        jj_la1[107] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3670,7 +3822,7 @@ void MultiplicativeExpr():
 
         break;
       default:
-        jj_la1[106] = jj_gen;
+        jj_la1[108] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3680,7 +3832,7 @@ void MultiplicativeExpr():
 
         break;
       default:
-        jj_la1[107] = jj_gen;
+        jj_la1[109] = jj_gen;
         ;
       }
       jj_consume_token(LBBRACKET);
@@ -3696,7 +3848,7 @@ void MultiplicativeExpr():
       jj_consume_token(RBBRACKET);
       break;
     default:
-      jj_la1[108] = jj_gen;
+      jj_la1[110] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3710,7 +3862,7 @@ void MultiplicativeExpr():
       jj_consume_token(RBRACKET);
       break;
     default:
-      jj_la1[109] = jj_gen;
+      jj_la1[111] = jj_gen;
       ;
     }
   }
@@ -3720,17 +3872,29 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE:
       t = jj_consume_token(VARIABLE);
-                     cp.DoFindVariable(t.image);
+                     cp.DoFindVariable(t.image,false);
       break;
     case DOLLAR:
       jj_consume_token(DOLLAR);
-      jj_consume_token(LBBRACKET);
-      Expr();
-      jj_consume_token(RBBRACKET);
-                                                cp.DoFindVariableByName();
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case VARIABLE:
+        t = jj_consume_token(VARIABLE);
+                         cp.DoFindVariable(t.image,false);cp.DoFindVariableByName(false);
+        break;
+      case LBBRACKET:
+        jj_consume_token(LBBRACKET);
+        Expr();
+        jj_consume_token(RBBRACKET);
+                                           cp.DoFindVariableByName(false);
+        break;
+      default:
+        jj_la1[112] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
       break;
     default:
-      jj_la1[110] = jj_gen;
+      jj_la1[113] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3751,6 +3915,13 @@ void MultiplicativeExpr():
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case EMPTY:
     case INCLUDE:
@@ -3759,6 +3930,7 @@ void MultiplicativeExpr():
     case REQUIRE_ONCE:
     case EVAL:
     case ISSET:
+    case STATIC:
     case NEW:
     case CLONE:
     case FUNCTION:
@@ -3767,11 +3939,6 @@ void MultiplicativeExpr():
     case LIST:
     case EXIT:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -3784,6 +3951,7 @@ void MultiplicativeExpr():
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       ArrayBodyItem();
       label_29:
       while (true) {
@@ -3792,10 +3960,10 @@ void MultiplicativeExpr():
           ;
           break;
         default:
-          jj_la1[111] = jj_gen;
+          jj_la1[114] = jj_gen;
           break label_29;
         }
-        if (jj_2_18(2147483647)) {
+        if (jj_2_11(2147483647)) {
           jj_consume_token(CAMMA);
         } else {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3804,7 +3972,7 @@ void MultiplicativeExpr():
             ArrayBodyItem();
             break;
           default:
-            jj_la1[112] = jj_gen;
+            jj_la1[115] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -3812,7 +3980,7 @@ void MultiplicativeExpr():
       }
       break;
     default:
-      jj_la1[113] = jj_gen;
+      jj_la1[116] = jj_gen;
       ;
     }
   }
@@ -3826,7 +3994,7 @@ void MultiplicativeExpr():
                                cp.DoAddArrayItem(true);
       break;
     default:
-      jj_la1[114] = jj_gen;
+      jj_la1[117] = jj_gen;
             cp.DoAddArrayItem(false);
     }
   }
@@ -3849,6 +4017,7 @@ void MultiplicativeExpr():
     case NAMESPACE_C:
     case IDENTIFIER:
     case NOMBRE:
+    case INTEGER:
       ConstArrayBodyItem();
       label_30:
       while (true) {
@@ -3857,10 +4026,10 @@ void MultiplicativeExpr():
           ;
           break;
         default:
-          jj_la1[115] = jj_gen;
+          jj_la1[118] = jj_gen;
           break label_30;
         }
-        if (jj_2_19(2147483647)) {
+        if (jj_2_12(2147483647)) {
           jj_consume_token(CAMMA);
         } else {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3869,7 +4038,7 @@ void MultiplicativeExpr():
             ConstArrayBodyItem();
             break;
           default:
-            jj_la1[116] = jj_gen;
+            jj_la1[119] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -3877,7 +4046,7 @@ void MultiplicativeExpr():
       }
       break;
     default:
-      jj_la1[117] = jj_gen;
+      jj_la1[120] = jj_gen;
       ;
     }
   }
@@ -3890,7 +4059,7 @@ void MultiplicativeExpr():
       StaticConsts();
       break;
     default:
-      jj_la1[118] = jj_gen;
+      jj_la1[121] = jj_gen;
       ;
     }
   }
@@ -3906,7 +4075,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[119] = jj_gen;
+        jj_la1[122] = jj_gen;
         break label_31;
       }
       jj_consume_token(CAMMA);
@@ -3932,6 +4101,13 @@ void MultiplicativeExpr():
     case LBRACKET:
     case LCBRACKET:
     case NSSEPERATOR:
+    case INT_CAST:
+    case FLOAT_CAST:
+    case STRING_CAST:
+    case ARRAY_CAST:
+    case OBJECT_CAST:
+    case BOOL_CAST:
+    case UNSET_CAST:
     case ARRAY:
     case EMPTY:
     case INCLUDE:
@@ -3940,6 +4116,7 @@ void MultiplicativeExpr():
     case REQUIRE_ONCE:
     case EVAL:
     case ISSET:
+    case STATIC:
     case NEW:
     case CLONE:
     case FUNCTION:
@@ -3948,11 +4125,6 @@ void MultiplicativeExpr():
     case LIST:
     case EXIT:
     case NAMESPACE:
-    case CLASS:
-    case INTERFACE:
-    case FINAL:
-    case ABSTRACT:
-    case TRAIT:
     case CLASS_C:
     case TRAIT_C:
     case FUNCTION_C:
@@ -3965,8 +4137,9 @@ void MultiplicativeExpr():
     case VARIABLE:
     case DOLLAR:
     case NOMBRE:
+    case INTEGER:
       Expr();
-               count++;
+               cp.doArgItem();count++;
       label_32:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3974,19 +4147,19 @@ void MultiplicativeExpr():
           ;
           break;
         default:
-          jj_la1[120] = jj_gen;
+          jj_la1[123] = jj_gen;
           break label_32;
         }
         jj_consume_token(CAMMA);
         Expr();
-                                              count++;
+                                                             cp.doArgItem();count++;
       }
       break;
     default:
-      jj_la1[121] = jj_gen;
+      jj_la1[124] = jj_gen;
       ;
     }
-                                                                cp.DoPackArg(count);
+                                                                                              cp.DoPackArg(count);
   }
 
   final public void ObjectMember() throws ParseException, CompilationException {
@@ -3994,21 +4167,25 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE:
       t = jj_consume_token(VARIABLE);
-                     cp.DoFindVariable(t.image);cp.DoToString();
+                     cp.DoFindVariable(t.image,false);cp.DoToString();cp.DoRequestMember(false);
       break;
     case DOLLAR:
       jj_consume_token(DOLLAR);
       jj_consume_token(LBBRACKET);
       Expr();
       jj_consume_token(RBBRACKET);
-                                                cp.DoFindVariableByName();cp.DoToString();
+                                                cp.DoFindVariableByName(false);cp.DoToString();cp.DoRequestMember(false);
       break;
     case MEMBERNAME:
       t = jj_consume_token(MEMBERNAME);
-                         cp.DoString(t.image);
+      if (jj_2_13(2147483647)) {
+                                  cp.DoString(t.image);cp.DoRequestMember(true);
+      } else {
+            cp.DoString(t.image);cp.DoRequestMember(false);
+      }
       break;
     default:
-      jj_la1[122] = jj_gen;
+      jj_la1[125] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4023,7 +4200,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[123] = jj_gen;
+        jj_la1[126] = jj_gen;
         break label_33;
       }
       jj_consume_token(CAMMA);
@@ -4068,7 +4245,7 @@ void MultiplicativeExpr():
       jj_consume_token(RBRACKET);
       break;
     default:
-      jj_la1[124] = jj_gen;
+      jj_la1[127] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4076,18 +4253,19 @@ void MultiplicativeExpr():
 
   final public void FunctionDeclaration() throws ParseException, CompilationException {
     Token t;
+    boolean ref = false;
     jj_consume_token(FUNCTION);
-
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BITAND:
       jj_consume_token(BITAND);
-
+                            ref = true;
       break;
     default:
-      jj_la1[125] = jj_gen;
+      jj_la1[128] = jj_gen;
       ;
     }
     t = jj_consume_token(IDENTIFIER);
+                                                               cp.doBeginFunctionDeclaration(t.image,ref);
     jj_consume_token(LBRACKET);
     ParametreList();
     jj_consume_token(RBRACKET);
@@ -4095,6 +4273,7 @@ void MultiplicativeExpr():
     jj_consume_token(LBBRACKET);
     InnerStatementList();
     jj_consume_token(RBBRACKET);
+                                                                  cp.doEndFunction();
   }
 
   final public void ParametreList() throws ParseException, CompilationException {
@@ -4102,7 +4281,6 @@ void MultiplicativeExpr():
     case BITAND:
     case NSSEPERATOR:
     case ARRAY:
-    case CALLABLE:
     case NAMESPACE:
     case IDENTIFIER:
     case VARIABLE:
@@ -4114,7 +4292,7 @@ void MultiplicativeExpr():
           ;
           break;
         default:
-          jj_la1[126] = jj_gen;
+          jj_la1[129] = jj_gen;
           break label_34;
         }
         jj_consume_token(CAMMA);
@@ -4122,69 +4300,84 @@ void MultiplicativeExpr():
       }
       break;
     default:
-      jj_la1[127] = jj_gen;
+      jj_la1[130] = jj_gen;
       ;
     }
   }
 
   final public void ParametreListItem() throws ParseException, CompilationException {
     Token t;
+    String typename = "";
+    boolean is_ref = false;
+    boolean hasDefault = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NSSEPERATOR:
     case ARRAY:
-    case CALLABLE:
     case NAMESPACE:
     case IDENTIFIER:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ARRAY:
         jj_consume_token(ARRAY);
-
-        break;
-      case CALLABLE:
-        jj_consume_token(CALLABLE);
-
+                  typename = "array";
         break;
       case NSSEPERATOR:
       case NAMESPACE:
       case IDENTIFIER:
         FullyQualifiedClassName();
-
+                                      typename = (String)$(0).data;
         break;
       default:
-        jj_la1[128] = jj_gen;
+        jj_la1[131] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[129] = jj_gen;
+      jj_la1[132] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BITAND:
       jj_consume_token(BITAND);
-
+                   is_ref = true;
       break;
     default:
-      jj_la1[130] = jj_gen;
+      jj_la1[133] = jj_gen;
       ;
     }
     t = jj_consume_token(VARIABLE);
-
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
       Expr();
-
+                                                                          hasDefault = true;
       break;
     default:
-      jj_la1[131] = jj_gen;
+      jj_la1[134] = jj_gen;
       ;
     }
+      cp.doFunctionParamItem(t.image,typename,is_ref,hasDefault);
   }
 
   final public void FullyQualifiedClassName() throws ParseException, CompilationException {
-    ConstName();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case IDENTIFIER:
+      NameSpaceName();
+      break;
+    case NAMESPACE:
+      jj_consume_token(NAMESPACE);
+      jj_consume_token(NSSEPERATOR);
+      NameSpaceName();
+      break;
+    case NSSEPERATOR:
+      jj_consume_token(NSSEPERATOR);
+      NameSpaceName();
+      break;
+    default:
+      jj_la1[135] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
   }
 
   final public void NameSpaceName() throws ParseException, CompilationException {
@@ -4199,7 +4392,7 @@ void MultiplicativeExpr():
         ;
         break;
       default:
-        jj_la1[132] = jj_gen;
+        jj_la1[136] = jj_gen;
         break label_35;
       }
       jj_consume_token(NSSEPERATOR);
@@ -4213,59 +4406,37 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case STATIC:
       jj_consume_token(STATIC);
-
+               cp.doFetchStatic();
       break;
     case NSSEPERATOR:
     case NAMESPACE:
     case IDENTIFIER:
       ConstName();
+
       break;
     default:
-      jj_la1[133] = jj_gen;
+      jj_la1[137] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
   }
 
   final public void ClassNameReference() throws ParseException, CompilationException {
-    if (jj_2_20(2)) {
+    Token t;
+    if (jj_2_14(2)) {
       ClassName();
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PSTRING:
       case BEGIN_OF_SSTRING:
       case HEREDOC_ENTRY:
-      case PLUS:
-      case MINUS:
-      case INC:
-      case DEC:
-      case NOT:
-      case BITAND:
-      case BITNOT:
       case LBRACKET:
       case LCBRACKET:
       case NSSEPERATOR:
       case ARRAY:
-      case EMPTY:
-      case INCLUDE:
-      case INCLUDE_ONCE:
-      case REQUIRE:
-      case REQUIRE_ONCE:
-      case EVAL:
-      case ISSET:
-      case NEW:
-      case CLONE:
+      case STATIC:
       case FUNCTION:
-      case SILENT:
-      case PRINT:
-      case LIST:
-      case EXIT:
       case NAMESPACE:
-      case CLASS:
-      case INTERFACE:
-      case FINAL:
-      case ABSTRACT:
-      case TRAIT:
       case CLASS_C:
       case TRAIT_C:
       case FUNCTION_C:
@@ -4278,10 +4449,11 @@ void MultiplicativeExpr():
       case VARIABLE:
       case DOLLAR:
       case NOMBRE:
-        Expr();
+      case INTEGER:
+        Atom();
         break;
       default:
-        jj_la1[134] = jj_gen;
+        jj_la1[138] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -4289,7 +4461,7 @@ void MultiplicativeExpr():
   }
 
   final public void StaticConsts() throws ParseException, CompilationException {
-    if (jj_2_21(2)) {
+    if (jj_2_15(2)) {
       Constant();
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -4325,7 +4497,7 @@ void MultiplicativeExpr():
         jj_consume_token(RCBRACKET);
         break;
       default:
-        jj_la1[135] = jj_gen;
+        jj_la1[139] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -4349,7 +4521,7 @@ void MultiplicativeExpr():
       NameSpaceName();
       break;
     default:
-      jj_la1[136] = jj_gen;
+      jj_la1[140] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4460,60 +4632,8 @@ void MultiplicativeExpr():
     finally { jj_save(14, xla); }
   }
 
-  private boolean jj_2_16(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_16(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(15, xla); }
-  }
-
-  private boolean jj_2_17(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_17(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(16, xla); }
-  }
-
-  private boolean jj_2_18(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_18(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(17, xla); }
-  }
-
-  private boolean jj_2_19(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_19(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(18, xla); }
-  }
-
-  private boolean jj_2_20(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_20(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(19, xla); }
-  }
-
-  private boolean jj_2_21(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_21(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(20, xla); }
-  }
-
-  private boolean jj_3R_67() {
-    return false;
-  }
-
-  private boolean jj_3R_43() {
-    if (jj_scan_token(IDENTIFIER)) return true;
+  private boolean jj_3R_70() {
     if (jj_scan_token(NSSEPERATOR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_66() {
-    if (jj_scan_token(DOUBLESLICE)) return true;
     return false;
   }
 
@@ -4522,79 +4642,25 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3R_36() {
-    if (jj_scan_token(FUNCTION)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_46()) jj_scanpos = xsp;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(LBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_54() {
-    if (jj_3R_65()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_66()) {
-    jj_scanpos = xsp;
-    if (jj_3R_67()) {
-    jj_scanpos = xsp;
-    if (jj_3R_68()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_69() {
-    if (jj_scan_token(EXTENDS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_53() {
-    if (jj_scan_token(NAMESPACE_C)) return true;
-    return false;
-  }
-
-  private boolean jj_3_15() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(UNSET)) return true;
-    if (jj_scan_token(RBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3R_39() {
     if (jj_scan_token(LBBRACKET)) return true;
     return false;
   }
 
-  private boolean jj_3_14() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(BOOL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_64() {
-    if (jj_scan_token(VARIABLE)) return true;
+  private boolean jj_3R_66() {
+    if (jj_scan_token(EXTENDS)) return true;
     return false;
   }
 
   private boolean jj_3R_63() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_69()) jj_scanpos = xsp;
-    return false;
-  }
-
-  private boolean jj_3_13() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(OBJECT)) return true;
+    if (jj_3R_66()) jj_scanpos = xsp;
     return false;
   }
 
   private boolean jj_3_12() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(ARRAY)) return true;
+    if (jj_scan_token(CAMMA)) return true;
     if (jj_scan_token(RBRACKET)) return true;
     return false;
   }
@@ -4604,32 +4670,8 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3_11() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3_10() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(FLOAT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_9() {
-    if (jj_scan_token(LBRACKET)) return true;
-    if (jj_scan_token(INT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_41() {
-    if (jj_scan_token(STATIC)) return true;
-    Token xsp;
-    if (jj_3R_51()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_51()) { jj_scanpos = xsp; break; }
-    }
+  private boolean jj_3R_64() {
+    if (jj_scan_token(VARIABLE)) return true;
     return false;
   }
 
@@ -4640,6 +4682,22 @@ void MultiplicativeExpr():
     if (jj_3R_38()) {
     jj_scanpos = xsp;
     if (jj_3R_39()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_41() {
+    if (jj_scan_token(STATIC)) return true;
+    Token xsp;
+    if (jj_3R_51()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_51()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -4668,50 +4726,6 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3R_52() {
-    if (jj_scan_token(NOMBRE)) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_44() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_52()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(163)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(164)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(165)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(166)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(167)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(168)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(169)) {
-    jj_scanpos = xsp;
-    if (jj_3R_53()) {
-    jj_scanpos = xsp;
-    if (jj_3R_54()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
   private boolean jj_3R_61() {
     if (jj_scan_token(EXTENDS)) return true;
     return false;
@@ -4728,8 +4742,38 @@ void MultiplicativeExpr():
     return false;
   }
 
+  private boolean jj_3R_69() {
+    if (jj_scan_token(NSSEPERATOR)) return true;
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_68() {
+    if (jj_scan_token(NAMESPACE)) return true;
+    if (jj_scan_token(NSSEPERATOR)) return true;
+    return false;
+  }
+
   private boolean jj_3R_57() {
     if (jj_scan_token(CLASS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_67() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_65() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_67()) {
+    jj_scanpos = xsp;
+    if (jj_3R_68()) {
+    jj_scanpos = xsp;
+    if (jj_3R_69()) return true;
+    }
+    }
     return false;
   }
 
@@ -4739,8 +4783,9 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3R_50() {
-    if (jj_scan_token(INLINEHTML)) return true;
+  private boolean jj_3_11() {
+    if (jj_scan_token(CAMMA)) return true;
+    if (jj_scan_token(RBRACKET)) return true;
     return false;
   }
 
@@ -4776,6 +4821,11 @@ void MultiplicativeExpr():
     return false;
   }
 
+  private boolean jj_3R_50() {
+    if (jj_scan_token(INLINEHTML)) return true;
+    return false;
+  }
+
   private boolean jj_3R_40() {
     Token xsp;
     if (jj_3R_50()) return true;
@@ -4786,16 +4836,10 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3_19() {
-    if (jj_scan_token(CAMMA)) return true;
-    if (jj_scan_token(RBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3_8() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(145)) {
+    if (jj_scan_token(147)) {
     jj_scanpos = xsp;
     if (jj_scan_token(96)) {
     jj_scanpos = xsp;
@@ -4805,55 +4849,64 @@ void MultiplicativeExpr():
     return false;
   }
 
-  private boolean jj_3R_73() {
-    if (jj_scan_token(NSSEPERATOR)) return true;
+  private boolean jj_3_15() {
+    if (jj_3R_45()) return true;
     return false;
   }
 
-  private boolean jj_3_18() {
-    if (jj_scan_token(CAMMA)) return true;
-    if (jj_scan_token(RBRACKET)) return true;
+  private boolean jj_3_14() {
+    if (jj_3R_44()) return true;
     return false;
   }
 
-  private boolean jj_3R_72() {
-    if (jj_scan_token(NSSEPERATOR)) return true;
-    if (jj_3R_49()) return true;
+  private boolean jj_3R_53() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
-  private boolean jj_3R_71() {
-    if (jj_scan_token(NAMESPACE)) return true;
-    if (jj_scan_token(NSSEPERATOR)) return true;
+  private boolean jj_3_10() {
+    if (jj_scan_token(LBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_44() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_52()) {
+    jj_scanpos = xsp;
+    if (jj_3R_53()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_52() {
+    if (jj_scan_token(STATIC)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_49() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_70()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(LBRACKET)) return true;
     return false;
   }
 
   private boolean jj_3_7() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(145)) {
+    if (jj_scan_token(147)) {
     jj_scanpos = xsp;
     if (jj_scan_token(96)) {
     jj_scanpos = xsp;
     if (jj_3R_42()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_70() {
-    if (jj_3R_49()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_65() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) {
-    jj_scanpos = xsp;
-    if (jj_3R_72()) return true;
     }
     }
     return false;
@@ -4865,23 +4918,13 @@ void MultiplicativeExpr():
     return false;
   }
 
+  private boolean jj_3R_46() {
+    if (jj_scan_token(BITAND)) return true;
+    return false;
+  }
+
   private boolean jj_3_6() {
     if (jj_3R_41()) return true;
-    return false;
-  }
-
-  private boolean jj_3_21() {
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  private boolean jj_3_20() {
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_56() {
-    if (jj_3R_65()) return true;
     return false;
   }
 
@@ -4890,47 +4933,73 @@ void MultiplicativeExpr():
     return false;
   }
 
+  private boolean jj_3R_36() {
+    if (jj_scan_token(FUNCTION)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_46()) jj_scanpos = xsp;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(LBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_13() {
+    if (jj_scan_token(LBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_56() {
+    if (jj_scan_token(NAMESPACE_C)) return true;
+    return false;
+  }
+
   private boolean jj_3R_55() {
-    if (jj_scan_token(STATIC)) return true;
+    if (jj_scan_token(INTEGER)) return true;
     return false;
   }
 
   private boolean jj_3R_45() {
     Token xsp;
     xsp = jj_scanpos;
+    if (jj_3R_54()) {
+    jj_scanpos = xsp;
     if (jj_3R_55()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(166)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(167)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(168)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(169)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(170)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(171)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(172)) {
     jj_scanpos = xsp;
     if (jj_3R_56()) return true;
     }
-    return false;
-  }
-
-  private boolean jj_3R_49() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_73()) { jj_scanpos = xsp; break; }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
     }
     return false;
   }
 
-  private boolean jj_3_16() {
-    if (jj_3R_44()) return true;
+  private boolean jj_3R_54() {
+    if (jj_scan_token(NOMBRE)) return true;
     return false;
   }
 
-  private boolean jj_3R_46() {
-    if (jj_scan_token(BITAND)) return true;
-    return false;
-  }
-
-  private boolean jj_3_17() {
-    if (jj_scan_token(LBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_68() {
+  private boolean jj_3R_43() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(NSSEPERATOR)) return true;
     return false;
   }
 
@@ -4945,7 +5014,7 @@ void MultiplicativeExpr():
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[137];
+  final private int[] jj_la1 = new int[141];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -4961,24 +5030,24 @@ void MultiplicativeExpr():
       jj_la1_init_5();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40080,0x0,0x0,0x0,0x40080,0x0,0x0,0x0,0x0,0x40080,0x0,0x40000,0x40000,0x40000,0x0,0x0,0x40000,0x40080,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40080,0x40080,0x40080,0x0,0x40000,0x0,0x40080,0x0,0x0,0x40080,0x40080,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40080,0x0,0x0,0x40000,0x0,0x40000,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x40000,0x0,0x0,0x40000,0x0,0x0,0x40000,0x40000,0x11f000,0x91f000,0x91f000,0x11f000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x10000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,};
+      jj_la1_0 = new int[] {0x40080,0x0,0x0,0x0,0x40080,0x0,0x0,0x0,0x0,0x40080,0x0,0x40000,0x40000,0x40000,0x0,0x0,0x40000,0x40080,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40080,0x40080,0x40080,0x0,0x40000,0x0,0x40080,0x0,0x0,0x40080,0x40080,0x0,0x0,0x40000,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40080,0x0,0x0,0x40000,0x0,0x40000,0x40000,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x40000,0x0,0x0,0x40000,0x0,0x40000,0x0,0x0,0x0,0x40000,0x11f000,0x91f000,0x91f000,0x11f000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x10000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0xf2900,0x2000,0x0,0x0,0xf2900,0x4000,0x0,0x0,0x0,0xf2900,0x4000,0xf2900,0xf2900,0xf2900,0x2000,0x0,0xf0900,0xfa900,0x4000,0x0,0x4000,0x4000,0x1000000,0x0,0x1000000,0x0,0x0,0x0,0x0,0xfa900,0xfa900,0xfa900,0x4000,0xf0900,0x8000,0xf2900,0xa000,0xa000,0xf2900,0xfa900,0x0,0x0,0x0,0x900,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x4000,0x4000,0x0,0x4000,0x2000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x0,0x2000,0xf2900,0xff000000,0xff000000,0xf0900,0x4000,0xf0900,0xf8900,0x1000,0xf30000,0xf30000,0xc0000,0xc0000,0xf0000,0x900,0xf0900,0x0,0x0,0xf0900,0x0,0x0,0x900,0x900,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x4000,0xf0900,0x0,0x4000,0x4000,0x30000,0x0,0x4000,0x4000,0xf0900,0x0,0x4000,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0xf0900,0x30000,0x0,};
+      jj_la1_1 = new int[] {0xf2900,0x2000,0x0,0x0,0xf2900,0x4000,0x0,0x0,0x0,0xf2900,0x4000,0xf2900,0xf2900,0xf2900,0x2000,0x0,0xf0900,0xfa900,0x4000,0x0,0x4000,0x4000,0x1000000,0x0,0x1000000,0x0,0x0,0x0,0x0,0xfa900,0xfa900,0xfa900,0x4000,0xf0900,0x8000,0xf2900,0xa000,0xa000,0xf2900,0xfa900,0x0,0x0,0x900,0x0,0x0,0x900,0x0,0x0,0x0,0x0,0x4000,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x4000,0x4000,0x0,0x4000,0x2000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x0,0x2000,0xf2900,0xff000000,0xff000000,0xf0900,0x4000,0xf0900,0xf0900,0x1000,0xf30000,0xf30000,0xc0000,0xc0000,0xf0900,0x0,0xf0900,0x0,0x0,0xf0900,0x0,0x900,0x0,0x0,0x0,0x900,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x4000,0xf0900,0x0,0x4000,0x4000,0x30000,0x0,0x4000,0x4000,0xf0900,0x0,0x4000,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0x0,0x900,0x30000,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x5498000,0x4000000,0x4000000,0x0,0x5498000,0x0,0x0,0x0,0x0,0x5498000,0x0,0x1498000,0x1498000,0x1498000,0x4000000,0x0,0x1498000,0x5498000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x5498000,0x5498000,0x5498000,0x0,0x1498000,0x4000000,0x5498000,0x0,0x0,0x5498000,0x5498000,0x10000,0x10000,0x40000000,0x1410000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x4000000,0x5498000,0xf,0xf,0x1498000,0x0,0x1498000,0x1498000,0x0,0x377ff0,0x377ff0,0x80000000,0x80000000,0x98000,0x1400000,0x1c98000,0x400000,0x15400000,0x3498000,0x15400000,0x0,0x1400000,0x0,0x0,0x0,0x0,0x0,0x20000000,0x0,0x10000,0x0,0x0,0x10000,0x0,0x0,0x0,0x0,0x400000,0x0,0x0,0x0,0x1498000,0x40000000,0x0,0x0,0x1000000,0x40000000,0x0,0x0,0x1498000,0x0,0x0,0x0,0x10000,0x0,0x10000,0x0,0x0,0x10000,0x0,0x0,0x0,0x1498000,0x1000000,0x0,};
+      jj_la1_2 = new int[] {0x5498000,0x4000000,0x4000000,0x0,0x5498000,0x0,0x0,0x0,0x0,0x5498000,0x0,0x1498000,0x1498000,0x1498000,0x4000000,0x0,0x1498000,0x5498000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x5498000,0x5498000,0x5498000,0x0,0x1498000,0x4000000,0x5498000,0x0,0x0,0x5498000,0x5498000,0x10000,0x10000,0x1410000,0x40000000,0x0,0x1400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x4000000,0x5498000,0xf,0xf,0x1498000,0x0,0x1498000,0x1498000,0x0,0x377ff0,0x377ff0,0x80000000,0x80000000,0x1498000,0x400000,0x1c98000,0x400000,0x15400000,0x3498000,0x15400000,0x1400000,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x0,0x0,0x10000,0x0,0x0,0x0,0x0,0x400000,0x4000000,0x0,0x0,0x0,0x1498000,0x40000000,0x0,0x0,0x1000000,0x40000000,0x0,0x0,0x1498000,0x0,0x0,0x0,0x10000,0x0,0x10000,0x0,0x0,0x10000,0x0,0x0,0x0,0x0,0x1400000,0x1000000,0x0,};
    }
    private static void jj_la1_init_3() {
-      jj_la1_3 = new int[] {0xf6558f91,0x0,0x0,0x0,0xf6558f91,0x0,0x0,0x0,0x1,0xf6558f91,0x0,0xf0000011,0xf0000011,0xf0000011,0x0,0x480,0xf6558911,0xf6558f91,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x2000,0x1000,0x2000,0xf6558f91,0xf6558f91,0xf6558f91,0x0,0xf0000011,0x0,0xf7d58f91,0x0,0x0,0xf7d58f91,0xf6558f91,0x0,0x0,0x0,0x11,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200,0x200,0x0,0x0,0x0,0x0,0x0,0x200,0x0,0x0,0x1,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xf6558f91,0x0,0x0,0xf0000011,0x0,0xf0000011,0xf0000011,0x0,0x0,0x0,0x0,0x0,0x0,0xf0000011,0xf0000011,0x0,0x0,0xf0000011,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xf0000011,0x0,0x0,0x0,0x11,0x0,0x0,0x0,0xf0000011,0x0,0x0,0xf0000000,0x0,0x0,0x11,0x11,0x11,0x0,0x0,0x1,0x1,0xf0000011,0x11,0x1,};
+      jj_la1_3 = new int[] {0xb2ac7ffd,0x0,0x0,0x0,0xb2ac7ffd,0x0,0x0,0x0,0x1,0xb2ac7ffd,0x0,0x800003fd,0x800003fd,0x800003fd,0x0,0x2400,0xb2ac4bfd,0xb2ac7ffd,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x10000,0x8000,0x10000,0xb2ac7ffd,0xb2ac7ffd,0xb2ac7ffd,0x0,0x800003fd,0x0,0xbeac7ffd,0x0,0x0,0xbeac7ffd,0xb2ac7ffd,0x0,0x0,0x201,0x0,0x0,0x201,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x1000,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x0,0x1,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xb2ac7ffd,0x0,0x0,0x800003fd,0x0,0x800003fd,0x800003fd,0x0,0x0,0x0,0x0,0x0,0x800003fd,0x0,0x800003fd,0x0,0x0,0x800003fd,0x0,0x201,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800003fd,0x0,0x0,0x0,0x201,0x0,0x0,0x0,0x800003fd,0x0,0x0,0x80000000,0x0,0x0,0x201,0x201,0x201,0x0,0x0,0x1,0x1,0x1,0x201,0x201,0x1,};
    }
    private static void jj_la1_init_4() {
-      jj_la1_4 = new int[] {0x1d4ffbf7,0x0,0x0,0x40000,0x1d4bfbf7,0x0,0x8,0x8,0x0,0x1d4bf9f7,0x0,0x1d42f1c7,0x1d42f1c7,0x1d42f1c7,0x0,0x10820,0x1d4af1c7,0x1d4bf9f7,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1d4bf9f7,0x1d4bf9f7,0x1d4bf9f7,0x0,0x1d42f1c7,0x0,0x1d4bf9f7,0x0,0x0,0x1d4bf9f7,0x1d4bf9f7,0x0,0x0,0x0,0x1d424100,0x100000,0x1c400000,0x800000,0x2000000,0x1d400000,0x0,0x800000,0x0,0xec200310,0xec200310,0xec200010,0x20200000,0xec200010,0x0,0x0,0x100,0x0,0x0,0x20000,0x8,0x20000,0xe0000000,0x0,0xe0000000,0x0,0x0,0x0,0x0,0x200,0x1d4bf9f7,0x0,0x0,0x1d42f1c7,0x0,0x1d42f1c7,0x1d42b1c7,0x0,0x0,0x0,0x0,0x0,0xb0c0,0x1d420107,0x1d42f1c7,0x0,0x0,0x1d42f1c7,0x0,0x0,0x1d400100,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x0,0x200,0x0,0x1c400000,0x800000,0x2000000,0x1d400000,0x0,0x0,0x0,0x0,0x1d42f1c7,0x0,0x0,0x0,0x20000,0x0,0x0,0x0,0x1d42f1c7,0x0,0x0,0x7,0x0,0x0,0x20400,0x20400,0x20400,0x0,0x0,0x0,0x20010,0x1d42f1c7,0x20000,0x20000,};
+      jj_la1_4 = new int[] {0xea3fffbf,0x0,0x0,0x100000,0x2fffbf,0x0,0x40,0x40,0x0,0x2fefbf,0x0,0xbcebf,0xbcebf,0xbcebf,0x0,0x42100,0x2bcebf,0x2fefbf,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2fefbf,0x2fefbf,0x2fefbf,0x0,0xbcebf,0x0,0x2fefbf,0x0,0x0,0x2fefbf,0x2fefbf,0x0,0x0,0x80880,0x0,0x400000,0x80880,0xe2000000,0x4000000,0x10000000,0xea000000,0x0,0x4000000,0x0,0x61001880,0x61001880,0x61000080,0x1000000,0x61000080,0x0,0x0,0x800,0x0,0x0,0x80000,0x40,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x2fefbf,0x0,0x0,0xbcebf,0x0,0xbcebf,0xacebf,0x0,0x0,0x0,0x0,0x0,0xacebf,0x0,0xbcebf,0x0,0x0,0xbcebf,0x0,0x80880,0x0,0x80080,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0xe2000000,0x4000000,0x10000000,0xea000000,0x0,0x0,0x0,0x0,0x0,0xbcebf,0x0,0x0,0x0,0x80000,0x0,0x0,0x0,0xbcebf,0x0,0x0,0x3f,0x0,0x0,0x80000,0x80000,0x80000,0x0,0x0,0x80000,0x0,0x80080,0x80880,0x80000,0x80000,};
    }
    private static void jj_la1_init_5() {
-      jj_la1_5 = new int[] {0x23ffa,0x0,0x800,0x0,0x23ffa,0x0,0x0,0x0,0x800,0x23ffa,0x0,0x23ff8,0x23ff8,0x23ff8,0x0,0x0,0x23ffa,0x23ffa,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x0,0x0,0x0,0x0,0x23ffa,0x23ffa,0x23ffa,0x0,0x23ff8,0x0,0x23ffa,0x0,0x0,0x23ffa,0x23ffa,0x0,0x0,0x0,0x23ff8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x1000,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x0,0x800,0x0,0x800,0x0,0x800,0x800,0x800,0x0,0x0,0x0,0x0,0x23ffa,0x0,0x0,0x23ff8,0x0,0x23ff8,0x23ff8,0x0,0x0,0x0,0x0,0x0,0x0,0x23ff8,0x23ff8,0x0,0x0,0x23ff8,0x0,0x3000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20ff8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3000,0x0,0x0,0x23ff8,0x0,0x0,0x0,0x20ff8,0x0,0x0,0x0,0x23ff8,0x3000,0x0,0x0,0x0,0x0,0x1800,0x800,0x800,0x0,0x0,0x0,0x800,0x23ff8,0x800,0x800,};
+      jj_la1_5 = new int[] {0x31ffd0,0x0,0x4000,0x0,0x31ffd0,0x0,0x0,0x0,0x4000,0x31ffd0,0x0,0x31ffc0,0x31ffc0,0x31ffc0,0x0,0x0,0x31ffd0,0x31ffd0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x31ffd0,0x31ffd0,0x31ffd0,0x0,0x31ffc0,0x0,0x31ffd0,0x0,0x0,0x31ffd0,0x31ffd0,0x0,0x0,0x31ffc0,0x0,0x0,0x31ffc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8007,0x8007,0x7,0x1,0x7,0x0,0x0,0x8000,0x0,0x0,0x4000,0x0,0x4000,0x7,0x4000,0x4007,0x4000,0x0,0x0,0x0,0x0,0x31ffd0,0x0,0x0,0x31ffc0,0x0,0x31ffc0,0x31ffc0,0x0,0x0,0x0,0x0,0x0,0x31ffc0,0x0,0x31ffc0,0x0,0x0,0x31ffc0,0x0,0x31ffc0,0x0,0x307fc0,0xc000,0x0,0x0,0x0,0x0,0x0,0x303fc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x18000,0x0,0x0,0x31ffc0,0x0,0x0,0x0,0x307fc0,0x0,0x0,0x0,0x31ffc0,0x18000,0x0,0x0,0x0,0x0,0xc000,0x4000,0x4000,0x0,0x0,0x4000,0x0,0x4000,0x31ffc0,0x4000,0x4000,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[21];
+  final private JJCalls[] jj_2_rtns = new JJCalls[15];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -4993,7 +5062,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5008,7 +5077,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5019,7 +5088,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5030,7 +5099,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5040,7 +5109,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5050,7 +5119,7 @@ void MultiplicativeExpr():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 137; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 141; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -5165,12 +5234,12 @@ void MultiplicativeExpr():
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[178];
+    boolean[] la1tokens = new boolean[182];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 137; i++) {
+    for (int i = 0; i < 141; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -5194,7 +5263,7 @@ void MultiplicativeExpr():
         }
       }
     }
-    for (int i = 0; i < 178; i++) {
+    for (int i = 0; i < 182; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -5221,7 +5290,7 @@ void MultiplicativeExpr():
 
   private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 21; i++) {
+    for (int i = 0; i < 15; i++) {
     try {
       JJCalls p = jj_2_rtns[i];
       do {
@@ -5243,12 +5312,6 @@ void MultiplicativeExpr():
             case 12: jj_3_13(); break;
             case 13: jj_3_14(); break;
             case 14: jj_3_15(); break;
-            case 15: jj_3_16(); break;
-            case 16: jj_3_17(); break;
-            case 17: jj_3_18(); break;
-            case 18: jj_3_19(); break;
-            case 19: jj_3_20(); break;
-            case 20: jj_3_21(); break;
           }
         }
         p = p.next;

@@ -2,16 +2,31 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f10696f7-8a45-4ea7-a860-e2d4c89e9f4b" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/JZendVM.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/Variable.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ClassDeclareIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIntIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/FunctionDeclareIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/IntIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/OpArray.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/RegMgr.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Routine.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/StringIns.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZendFunction.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/jphp/com/hadroncfy/jphp/jzend/compile/JZendParser.jj" afterPath="$PROJECT_DIR$/out/production/jphp/com/hadroncfy/jphp/jzend/compile/JZendParser.jj" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/jphp/com/hadroncfy/test.php" afterPath="$PROJECT_DIR$/out/production/jphp/com/hadroncfy/test.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/CompilationException.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/CompilationException.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/Main.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserConstants.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserConstants.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserTokenManager.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserTokenManager.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZNode.java" afterPath="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZNode.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/hadroncfy/test.php" afterPath="$PROJECT_DIR$/src/com/hadroncfy/test.php" />
     </list>
     <ignored path="jphp.iws" />
@@ -37,8 +52,51 @@
       <file leaf-file-name="test.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/test.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.19704433">
-              <caret line="8" column="10" selection-start-line="8" selection-start-column="10" selection-end-line="8" selection-end-column="10" />
+            <state vertical-scroll-proportion="0.073891625">
+              <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Instruction.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+              <folding>
+                <element signature="e#183#184#0" expanded="true" />
+                <element signature="e#219#220#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="JZendCompiler.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-11.272727">
+              <caret line="242" column="43" selection-start-line="242" selection-start-column="43" selection-end-line="242" selection-end-column="43" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#6055#6056#0" expanded="true" />
+                <element signature="e#6121#6122#0" expanded="true" />
+                <element signature="e#6169#6170#0" expanded="true" />
+                <element signature="e#6240#6241#0" expanded="true" />
+                <element signature="e#6291#6292#0" expanded="true" />
+                <element signature="e#6358#6359#0" expanded="true" />
+                <element signature="e#6412#6413#0" expanded="true" />
+                <element signature="e#6482#6483#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Opcode.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-13.363636">
+              <caret line="205" column="25" selection-start-line="205" selection-start-column="25" selection-end-line="205" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -48,8 +106,24 @@
         <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/Main.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="20" column="30" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
+              <caret line="24" column="35" selection-start-line="24" selection-start-column="15" selection-end-line="24" selection-end-column="35" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Routine.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Routine.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="11" column="40" selection-start-line="11" selection-start-column="40" selection-end-line="11" selection-end-column="40" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#489#490#0" expanded="true" />
+                <element signature="e#521#522#0" expanded="true" />
+                <element signature="e#551#552#0" expanded="true" />
+                <element signature="e#588#589#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -57,44 +131,28 @@
       <file leaf-file-name="JZendParser.jj" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.090909">
-              <caret line="932" column="14" selection-start-line="932" selection-start-column="14" selection-end-line="932" selection-end-column="14" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="1112" column="5" selection-start-line="1112" selection-start-column="5" selection-end-line="1112" selection-end-column="5" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Compiler.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java">
+      <file leaf-file-name="ZendFunction.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZendFunction.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="55" column="45" selection-start-line="55" selection-start-column="45" selection-end-line="55" selection-end-column="45" />
+              <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JZendCompiler.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
+      <file leaf-file-name="OpArray.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/OpArray.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.7272727">
-              <caret line="43" column="23" selection-start-line="43" selection-start-column="23" selection-end-line="43" selection-end-column="23" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#5096#5097#0" expanded="true" />
-                <element signature="e#5150#5151#0" expanded="true" />
-                <element signature="e#18196#18197#0" expanded="true" />
-                <element signature="e#18256#18257#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Opcode.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.909091">
-              <caret line="158" column="50" selection-start-line="158" selection-start-column="50" selection-end-line="158" selection-end-column="50" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="7" column="18" selection-start-line="7" selection-start-column="18" selection-end-line="7" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -121,23 +179,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTConstDeclaration.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTConstDeclarationItem.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTClassType.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTFunctionDeclaration.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ParseHalted.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTNombre.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTVariable.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTEcho.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTInlineHTML.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTPString.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTNameSpaceName.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTClassName.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTMethodMember.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTMemberDecl.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTMemberName.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTParametreListItem.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTConst.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTMemberModifier.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTTraitAlias.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ASTTraitMethod.java" />
@@ -163,15 +204,32 @@
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compiletest/Instruction.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserTokenManager.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Tools.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/Main.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/CompilationException.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZNode.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/RegisterMgr.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/RegMgr.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/JZendVM.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/Object.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java" />
-        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/Variable.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/UnaryInstruction.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIntIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/IntIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/StringIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/Main.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/SimpleInstruction.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/FunctionDeclareIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JumpIns.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/OpArray.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZendFunction.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Routine.java" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj" />
         <option value="$PROJECT_DIR$/src/com/hadroncfy/test.php" />
+        <option value="$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java" />
       </list>
     </option>
   </component>
@@ -215,9 +273,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="Scratches" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -228,6 +285,76 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="External Libraries" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jphp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jphp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="util" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jphp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; 1.8 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rt.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -308,6 +435,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -607,19 +735,19 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="-4" width="1366" height="772" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917318" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3572543" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917318" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32978722" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917318" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.64586586" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5179407" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917318" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20592706" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -659,8 +787,26 @@
           <properties />
           <option name="timeStamp" value="9" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java</url>
+          <line>422</line>
+          <properties />
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java</url>
+          <line>403</line>
+          <properties />
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java</url>
+          <line>180</line>
+          <properties />
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="14" />
+      <option name="time" value="21" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -669,439 +815,321 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.gitignore">
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/RuntimeException.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="475" column="20" selection-start-line="475" selection-start-column="20" selection-end-line="475" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="45" column="31" selection-start-line="45" selection-start-column="31" selection-end-line="45" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="3" column="29" selection-start-line="3" selection-start-column="29" selection-end-line="3" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="316" column="88" selection-start-line="316" selection-start-column="88" selection-end-line="316" selection-end-column="88" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#5096#5097#0" expanded="true" />
-            <element signature="e#5150#5151#0" expanded="true" />
-            <element signature="e#18196#18197#0" expanded="true" />
-            <element signature="e#18256#18257#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="101" column="23" selection-start-line="101" selection-start-column="23" selection-end-line="101" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/test.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="469" column="23" selection-start-line="469" selection-start-column="23" selection-end-line="469" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="23" selection-start-line="29" selection-start-column="23" selection-end-line="29" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="58" selection-start-line="34" selection-start-column="58" selection-end-line="34" selection-end-column="58" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="254" column="44" selection-start-line="254" selection-start-column="44" selection-end-line="254" selection-end-column="44" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#5096#5097#0" expanded="true" />
-            <element signature="e#5150#5151#0" expanded="true" />
-            <element signature="e#18196#18197#0" expanded="true" />
-            <element signature="e#18256#18257#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="62" column="26" selection-start-line="62" selection-start-column="26" selection-end-line="62" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/String.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="174" column="43" selection-start-line="174" selection-start-column="43" selection-end-line="174" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/AbstractStringBuilder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33164558">
-          <caret line="794" column="33" selection-start-line="794" selection-start-column="33" selection-end-line="794" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/StringBuilder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.121212">
-          <caret line="389" column="30" selection-start-line="389" selection-start-column="30" selection-end-line="389" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/Iterable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="44" column="17" selection-start-line="44" selection-start-column="17" selection-end-line="44" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Collection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.7738695">
-          <caret line="206" column="23" selection-start-line="206" selection-start-column="23" selection-end-line="206" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Vector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40703517">
-          <caret line="84" column="16" selection-start-line="84" selection-start-column="16" selection-end-line="84" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserConstants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.8095238">
-          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
-          <folding />
+          <caret line="42" column="40" selection-start-line="42" selection-start-column="40" selection-end-line="42" selection-end-column="40" />
         </state>
       </provider>
     </entry>
     <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/Exception.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="44" column="13" selection-start-line="44" selection-start-column="13" selection-end-line="44" selection-end-column="13" />
+          <caret line="44" column="35" selection-start-line="44" selection-start-column="35" selection-end-line="44" selection-end-column="35" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/TokenMgrError.java">
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/io/Serializable.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15075377">
-          <caret line="5" column="40" selection-start-line="5" selection-start-column="40" selection-end-line="5" selection-end-column="40" />
-          <folding />
+        <state vertical-scroll-proportion="0.13793103">
+          <caret line="141" column="51" selection-start-line="141" selection-start-column="51" selection-end-line="141" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/javax/script/SimpleScriptContext.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.5756208">
+          <caret line="66" column="28" selection-start-line="66" selection-start-column="28" selection-end-line="66" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/javax/script/ScriptEngineManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/javax/script/AbstractScriptEngine.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="61" column="20" selection-start-line="61" selection-start-column="20" selection-end-line="61" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/ext/nashorn.jar!/jdk/nashorn/api/scripting/NashornScriptEngine.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-2.2936893">
+          <caret line="209" column="28" selection-start-line="209" selection-start-column="28" selection-end-line="209" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/HashMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-4.239278">
+          <caret line="330" column="34" selection-start-line="330" selection-start-column="34" selection-end-line="330" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/charsets.jar!/sun/awt/motif/X11GB2312.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.7508651">
+          <caret line="39" column="29" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/charsets.jar!/sun/awt/motif/X11GBK.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.15570934">
+          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/rt.jar!/com/oracle/net/Sdp.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.06401384">
+          <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Collection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23481117">
+          <caret line="156" column="37" selection-start-line="156" selection-start-column="37" selection-end-line="156" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/LinkedList.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-27.029556">
+          <caret line="82" column="13" selection-start-line="82" selection-start-column="13" selection-end-line="82" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ParseException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.3694581">
+          <caret line="136" column="60" selection-start-line="136" selection-start-column="60" selection-end-line="136" selection-end-column="60" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Tools.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52204174">
-          <caret line="15" column="48" selection-start-line="15" selection-start-column="48" selection-end-line="15" selection-end-column="48" />
+        <state vertical-scroll-proportion="0.2955665">
+          <caret line="12" column="27" selection-start-line="12" selection-start-column="27" selection-end-line="12" selection-end-column="27" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Token.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/SimpleCharStream.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.0974479">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/rt.jar!/sun/reflect/NativeMethodAccessorImpl.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.9375">
-          <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/rt.jar!/sun/reflect/DelegatingMethodAccessorImpl.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4765625">
-          <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/reflect/Method.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33101046">
-          <caret line="482" column="0" selection-start-line="482" selection-start-column="0" selection-end-line="482" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.11898017">
+          <caret line="135" column="24" selection-start-line="135" selection-start-column="24" selection-end-line="135" selection-end-column="24" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParserTokenManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="3417" column="21" selection-start-line="3417" selection-start-column="21" selection-end-line="3417" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/List.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="120" column="8" selection-start-line="120" selection-start-column="8" selection-end-line="120" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/ArrayList.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="276" column="21" selection-start-line="276" selection-start-column="15" selection-end-line="276" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="29" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/RuntimeException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.54545456">
-          <caret line="47" column="51" selection-start-line="47" selection-start-column="51" selection-end-line="47" selection-end-column="51" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/EmptyStackException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3181818">
-          <caret line="36" column="41" selection-start-line="36" selection-start-column="41" selection-end-line="36" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Stack.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33238637">
-          <caret line="101" column="34" selection-start-line="101" selection-start-column="34" selection-end-line="101" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2955665">
-          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/LICENSE">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="4.137931">
-          <caret line="168" column="57" selection-start-line="168" selection-start-column="57" selection-end-line="168" selection-end-column="57" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/Object.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="554" column="43" selection-start-line="554" selection-start-column="43" selection-end-line="554" selection-end-column="43" />
+          <caret line="3567" column="45" selection-start-line="3567" selection-start-column="45" selection-end-line="3567" selection-end-column="45" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/Throwable.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-19.885057">
-          <caret line="120" column="39" selection-start-line="120" selection-start-column="39" selection-end-line="120" selection-end-column="39" />
+        <state vertical-scroll-proportion="-0.44131455">
+          <caret line="650" column="25" selection-start-line="650" selection-start-column="25" selection-end-line="650" selection-end-column="25" />
         </state>
       </provider>
     </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/HashMap.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/JZendVM.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8522167">
-          <caret line="2379" column="0" selection-start-line="2379" selection-start-column="0" selection-end-line="2379" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.14778325">
+          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/math/BigDecimal.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/RegMgr.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-15.454844">
-          <caret line="303" column="49" selection-start-line="303" selection-start-column="49" selection-end-line="303" selection-end-column="49" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="15" column="23" selection-start-line="15" selection-start-column="23" selection-end-line="15" selection-end-column="23" />
         </state>
       </provider>
     </entry>
-    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/math/RoundingMode.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIntIns.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.600985">
-          <caret line="92" column="12" selection-start-line="92" selection-start-column="12" selection-end-line="92" selection-end-column="12" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="20" column="36" selection-start-line="20" selection-start-column="36" selection-end-line="20" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/IntIns.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="18" column="44" selection-start-line="18" selection-start-column="44" selection-end-line="18" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/DoubleIns.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.627907">
+          <caret line="18" column="44" selection-start-line="18" selection-start-column="44" selection-end-line="18" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/Iterable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3372093">
+          <caret line="61" column="51" selection-start-line="61" selection-start-column="51" selection-end-line="61" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/Variable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.20930232">
+          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/TokenMgrError.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.024630541">
+          <caret line="22" column="37" selection-start-line="22" selection-start-column="37" selection-end-line="22" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/ext/nashorn.jar!/jdk/nashorn/internal/objects/NativeJSON.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-10.729323">
+          <caret line="32" column="19" selection-start-line="32" selection-start-column="19" selection-end-line="32" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/StringIns.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="22" selection-start-line="12" selection-start-column="22" selection-end-line="12" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="10" column="26" selection-start-line="10" selection-start-column="26" selection-end-line="10" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/FunctionDeclareIns.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="44" column="32" selection-start-line="44" selection-start-column="32" selection-end-line="44" selection-end-column="32" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1852#1853#0" expanded="true" />
+            <element signature="e#1932#1933#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/out/production/jphp/com/hadroncfy/Main.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/List.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="652" column="12" selection-start-line="652" selection-start-column="12" selection-end-line="652" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/ListIterator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5566502">
+          <caret line="84" column="0" selection-start-line="84" selection-start-column="0" selection-end-line="84" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ClassDeclareIns.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="5" column="30" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Iterator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.5172414">
+          <caret line="115" column="34" selection-start-line="115" selection-start-column="34" selection-end-line="115" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/CharSequence.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.81280786">
+          <caret line="62" column="52" selection-start-line="62" selection-start-column="52" selection-end-line="62" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/lang/String.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3579639">
+          <caret line="111" column="61" selection-start-line="111" selection-start-column="61" selection-end-line="111" selection-end-column="61" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Queue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.70279145">
+          <caret line="158" column="72" selection-start-line="158" selection-start-column="72" selection-end-line="158" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/src.zip!/java/util/Map.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="128" column="17" selection-start-line="128" selection-start-column="17" selection-end-line="128" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/jdk1.8.0_25/jre/lib/ext/nashorn.jar!/jdk/nashorn/internal/runtime/Source.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-5.096774">
+          <caret line="646" column="18" selection-start-line="646" selection-start-column="18" selection-end-line="646" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/OpArray.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="18" selection-start-line="7" selection-start-column="18" selection-end-line="7" selection-end-column="18" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="2484" column="25" selection-start-line="2484" selection-start-column="25" selection-end-line="2484" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.1724138">
+          <caret line="1312" column="0" selection-start-line="1312" selection-start-column="0" selection-end-line="1312" selection-end-column="0" />
           <folding>
-            <element signature="e#123708#123709#0" expanded="false" />
-            <marker date="1463673264749" expanded="false" signature="382:389" placeholder="&lt;~&gt;" />
-            <marker date="1463673264749" expanded="true" signature="429:618" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="699:769" placeholder="{...}" />
-            <marker date="1463673264749" expanded="false" signature="809:819" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="831:837" placeholder=" }" />
-            <marker date="1463673264749" expanded="true" signature="871:943" placeholder="{...}" />
-            <marker date="1463673264749" expanded="false" signature="1058:1068" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="1122:1132" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="1191:1201" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="1248:1258" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="1315:1325" placeholder=" { " />
-            <marker date="1463673264749" expanded="false" signature="1374:1380" placeholder=" }" />
-            <marker date="1463673264749" expanded="true" signature="1434:2544" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="2629:4180" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="4261:7717" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="7793:8070" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="8150:8891" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="8969:10369" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="10454:10819" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="10908:11007" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="11093:13071" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="19875:21496" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="21576:21862" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="21946:22052" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="22109:22543" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="23207:23279" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="23366:23721" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="23811:24040" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="24127:24425" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="24515:24744" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="24824:28177" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="28260:30120" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="30205:30672" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="30753:32741" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="32821:34086" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="34170:34250" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="34513:36070" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="36158:38239" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="38324:38405" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="40063:40173" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="41878:42225" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="42303:42574" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="42659:44194" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="44276:44580" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="44668:44858" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="44940:45244" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="45322:46180" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="46259:48422" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="48508:48581" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="48659:48963" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="49048:49393" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="49481:50678" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="50761:51642" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="51745:51868" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="51957:52313" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="52396:52625" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="52705:52965" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="53046:53756" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="53843:55352" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="55435:55457" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="55530:55627" placeholder="{...}" />
-            <marker date="1463673264749" expanded="true" signature="62875:62887" placeholder="{...}" />
+            <element signature="e#2687#2688#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/SimpleCharStream.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ZendFunction.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/ParseException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2364532">
-          <caret line="141" column="47" selection-start-line="141" selection-start-column="47" selection-end-line="141" selection-end-column="47" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/CompilationException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.098522164">
-          <caret line="4" column="3" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
-          <folding>
-            <element signature="e#182#183#0" expanded="true" />
-            <element signature="e#208#209#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.113300495">
-          <caret line="8" column="24" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.909091">
-          <caret line="158" column="50" selection-start-line="158" selection-start-column="50" selection-end-line="158" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Compiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="55" column="45" selection-start-line="55" selection-start-column="45" selection-end-line="55" selection-end-column="45" />
+          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
           <folding />
         </state>
       </provider>
@@ -1109,37 +1137,74 @@
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="20" column="30" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
+          <caret line="24" column="35" selection-start-line="24" selection-start-column="15" selection-end-line="24" selection-end-column="35" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Opcode.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.7272727">
-          <caret line="43" column="23" selection-start-line="43" selection-start-column="23" selection-end-line="43" selection-end-column="23" />
+        <state vertical-scroll-proportion="-13.363636">
+          <caret line="205" column="25" selection-start-line="205" selection-start-column="25" selection-end-line="205" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Routine.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="11" column="40" selection-start-line="11" selection-start-column="40" selection-end-line="11" selection-end-column="40" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5096#5097#0" expanded="true" />
-            <element signature="e#5150#5151#0" expanded="true" />
-            <element signature="e#18196#18197#0" expanded="true" />
-            <element signature="e#18256#18257#0" expanded="true" />
+            <element signature="e#489#490#0" expanded="true" />
+            <element signature="e#521#522#0" expanded="true" />
+            <element signature="e#551#552#0" expanded="true" />
+            <element signature="e#588#589#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/Instruction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+          <folding>
+            <element signature="e#183#184#0" expanded="true" />
+            <element signature="e#219#220#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendParser.jj">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.090909">
-          <caret line="932" column="14" selection-start-line="932" selection-start-column="14" selection-end-line="932" selection-end-column="14" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1112" column="5" selection-start-line="1112" selection-start-column="5" selection-end-line="1112" selection-end-column="5" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/jphp/jzend/compile/JZendCompiler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-11.272727">
+          <caret line="242" column="43" selection-start-line="242" selection-start-column="43" selection-end-line="242" selection-end-column="43" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#6055#6056#0" expanded="true" />
+            <element signature="e#6121#6122#0" expanded="true" />
+            <element signature="e#6169#6170#0" expanded="true" />
+            <element signature="e#6240#6241#0" expanded="true" />
+            <element signature="e#6291#6292#0" expanded="true" />
+            <element signature="e#6358#6359#0" expanded="true" />
+            <element signature="e#6412#6413#0" expanded="true" />
+            <element signature="e#6482#6483#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/hadroncfy/test.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.19704433">
-          <caret line="8" column="10" selection-start-line="8" selection-start-column="10" selection-end-line="8" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.073891625">
+          <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
           <folding />
         </state>
       </provider>
