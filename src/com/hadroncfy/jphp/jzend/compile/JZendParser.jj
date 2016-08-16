@@ -10,7 +10,7 @@ package com.hadroncfy.jphp.jzend.compile;
 import java.util.Stack;
 
 
-public class JZendParser{
+class JZendParser implements LineGetter{
     private JZendCompiler cp = null;
     private int[] state_stack = new int[10];
     private int sp = 0;
@@ -33,7 +33,6 @@ public class JZendParser{
     }
     public void Parse() throws TokenMgrError,ParseException,CompilationException{
         this.TopStatementList();
-        cp.finishCompiling();
     }
     public void setCompiler(JZendCompiler c){
         this.cp = c;
@@ -59,6 +58,12 @@ public class JZendParser{
     }
     private ZNode $(int i){
         return node_stack.get(node_stack.size() - i - 1);
+    }
+    public int getLine(){
+        return token.beginLine;
+    }
+    public int getColumn(){
+        return token.beginColumn;
     }
     protected static int getBinaryOptrPriority(int t){
         switch(t){
@@ -367,6 +372,7 @@ void TopStatement()throws CompilationException:{
         )
     ) | <LBBRACKET> TopStatementList() <RBBRACKET> )
     | <USE> UseList() <EOL>
+    | ConstDeclaration()
     | Statement()
 
 }
@@ -379,18 +385,20 @@ void UseListItem()throws CompilationException:{
     NameSpaceName() [ <AS> t = <IDENTIFIER> {  } ]
     | <NSSEPERATOR> NameSpaceName() [ <AS> t = <IDENTIFIER> {  } ]
 }
-void Statement()throws CompilationException:{}{
-    ConstDeclaration()
+void Statement()throws CompilationException:{
+    Token t;
+}{
+    LOOKAHEAD(2) t = <IDENTIFIER> <SLICE> {  }
     | UntickedStatement()
 }
-void ConstDeclaration()throws CompilationException :{
+void ConstDeclaration() throws CompilationException :{
     Token t;
 }{
     <CONST> ConstDeclarationItem() (<CAMMA> ConstDeclarationItem() )* <EOL>
 }
 void ConstDeclarationItem()throws CompilationException:{
 }{
-    ConstName() <ASSIGN> Expr() { cp.DoDeclareConst((String)$().data); }
+    ConstName() <ASSIGN> StaticConsts() { cp.doDeclareConst((String)$().data); }
 }
 void UntickedStatement()throws CompilationException :{
     Token t;
@@ -398,7 +406,6 @@ void UntickedStatement()throws CompilationException :{
     <LBBRACKET> InnerStatementList() <RBBRACKET>
     | <EOL>
     | LOOKAHEAD (2) InlineHTML() { cp.DoEcho(); }
-    | LOOKAHEAD( <IDENTIFIER> <SLICE> ) t = <IDENTIFIER> <SLICE> {  }
     | <GOTO> t = <IDENTIFIER> <EOL> {  }
     | <RETURN> (
         Expr() <EOL> { cp.DoReturnOrThrow(0); }
@@ -532,7 +539,7 @@ void CatchItem(boolean is_first)throws CompilationException:{
     Token t;
     String typename = "";
 }{
-    <CATCH> <LBRACKET> [ ClassNameReference() { typename = (String)$().data; } ] t = <VARIABLE> <RBRACKET>
+    <CATCH> <LBRACKET> [ ClassName() { typename = (String)$().data; } ] t = <VARIABLE> <RBRACKET>
      <LBBRACKET> { cp.DoCatchBlock(is_first,t.image,typename); } InnerStatementList() <RBBRACKET>
 }
 void ClassDeclaration()throws CompilationException:{
@@ -636,10 +643,12 @@ void MethodMember()throws CompilationException:{
     <FUNCTION> {  } [ <BITAND> {  } ] t = <IDENTIFIER> <LBRACKET> ParametreList() <RBRACKET> (<EOL> | ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>)
 }
 void InnerStatementList()throws CompilationException:{}{
-    ( Statement() )*
+    ( InnerStatement() )*
 }
 void InnerStatement() throws CompilationException:{}{
-    Statement()
+    LOOKAHEAD(2) Statement()
+    | FunctionDeclaration()
+    | ClassDeclaration()
 }
 
 void Expr() throws CompilationException:{}{
@@ -816,18 +825,17 @@ void UnaryExpr()throws CompilationException :{}{
     | <NOT> UnaryExpr() { cp.DoUnaryOptr(NOT); }
     | <BITAND> UnaryExpr() { cp.DoReference(); }
     | <BITNOT> UnaryExpr() { cp.DoUnaryOptr(BITNOT); }
-    | <NEW> NewExpr() { cp.DoNew(); }
     | <CLONE> UnaryExpr() { cp.DoUnaryOptr(CLONE); }
-    | <SILENT> UnaryExpr()
+    | <SILENT> { cp.doBeginSilent(); } UnaryExpr() { cp.doEndSilent(); }
     | <PRINT> UnaryExpr() { cp.DoPrint(); }
     | <EXIT> ExitExpr() { cp.DoExit(); }
-    | <INT_CAST> UnaryExpr()
-    | <FLOAT_CAST> UnaryExpr()
-    | <STRING_CAST> UnaryExpr()
-    | <ARRAY_CAST> UnaryExpr()
-    | <OBJECT_CAST> UnaryExpr()
-    | <BOOL_CAST> UnaryExpr()
-    | <UNSET_CAST> UnaryExpr()
+    | <INT_CAST> UnaryExpr() { cp.doCast(0); }
+    | <FLOAT_CAST> UnaryExpr() { cp.doCast(1); }
+    | <STRING_CAST> UnaryExpr() { cp.doCast(2); }
+    | <ARRAY_CAST> UnaryExpr() { cp.doCast(3); }
+    | <OBJECT_CAST> UnaryExpr() { cp.doCast(4); }
+    | <BOOL_CAST> UnaryExpr() { cp.doCast(5); }
+    | <UNSET_CAST> UnaryExpr() { cp.doCast(6); }
     | AtomicExpr() [ <INC> { cp.convertRvalueToLvalue();cp.DoPostIncOrDec(false); } | <DEC> { cp.convertRvalueToLvalue();cp.DoPostIncOrDec(true); } | <INSTANCEOF> ClassNameReference() { cp.DoFindClass((String)$().data);cp.DoInstanceOf(); } ]
     | InternalFunctions()
 }
@@ -835,7 +843,7 @@ void UnaryExpr()throws CompilationException :{}{
 void NewExpr()throws CompilationException:{
     Token t;
 }{
-    ( ClassNameReference() ) (
+    ClassNameReference() (
         <LBRACKET> ArgList() <RBRACKET>
         | { cp.DoPackArg(0); }
     )
@@ -871,6 +879,7 @@ void Atom()throws CompilationException :{
     | <ARRAY> <LBRACKET> { cp.DoNewArray(); } ArrayBody() <RBRACKET>
     | <LCBRACKET> { cp.DoNewArray(); } ArrayBody() <RCBRACKET>
     | AnonymousFunction()
+    | <NEW> NewExpr() { cp.DoNew(); }
 //    | AnonymousClass()
 }
 void ClassMemberAndConst() throws CompilationException:{
@@ -878,9 +887,9 @@ void ClassMemberAndConst() throws CompilationException:{
 }{
     ConstName() [ <DOUBLESLICE> { cp.doFetchClass((String)$().data);hasmember = true; } ClassMember() { hasmember = true; } ] (
         LOOKAHEAD( <LBRACKET> ) { if(!hasmember)cp.DoFindFunction((String)$().data); }
-        | { if(!hasmember)cp.DoFindConst((String)$().data); }
+        | { if(!hasmember)cp.doFindConst((String)$().data,false); }
     )
-    | <STATIC> <DOUBLESLICE> ClassMember()
+    | <STATIC> { cp.doFetchClass("static"); } <DOUBLESLICE> ClassMember()
     | Constant()
 }
 void ClassMember() throws CompilationException:{
@@ -896,7 +905,7 @@ void String()throws CompilationException:{
     Token t;
 }{
     SString()
-    | t = <PSTRING> { cp.DoString(t.image); }
+    | ( t = <PSTRING> ) { cp.DoString(t.image); }
     | HereDoc()
 }
 
@@ -1021,7 +1030,10 @@ void ConstArrayBody()throws CompilationException:{}{
 }
 
 void ConstArrayBodyItem()throws CompilationException:{}{
-    StaticConsts() [ <DOUBLEARROW> StaticConsts() ]
+    StaticConsts() (
+        <DOUBLEARROW> StaticConsts() { cp.doStaticConstArrayAddMapItem(); }
+        | { cp.doStaticConstArrayAddItem(); }
+    )
 }
 
 void EchoStatement() throws CompilationException:{}{
@@ -1048,13 +1060,16 @@ void ForExpr()throws CompilationException:{}{
     Expr() ( <CAMMA> Expr() )*
 }
 void InternalFunctions()throws CompilationException:{}{
-    <EMPTY> <LBRACKET> AtomicExpr() <RBRACKET>
-    | <INCLUDE> Expr()
-    | <INCLUDE_ONCE> Expr()
-    | <REQUIRE> Expr()
-    | <REQUIRE_ONCE> Expr()
-    | <EVAL> <LBRACKET> Expr() <RBRACKET>
-    | <ISSET> <LBRACKET> Expr() <RBRACKET>
+    <EMPTY> <LBRACKET> AtomicExpr() <RBRACKET> { cp.doIsEmpty(); }
+    | <INCLUDE> Expr() { cp.doIncludeOrEval(0); }
+    | <INCLUDE_ONCE> Expr() { cp.doIncludeOrEval(1); }
+    | <REQUIRE> Expr() { cp.doIncludeOrEval(2); }
+    | <REQUIRE_ONCE> Expr() { cp.doIncludeOrEval(3); }
+    | <EVAL> <LBRACKET> Expr() <RBRACKET> { cp.doIncludeOrEval(4); }
+    | <ISSET> <LBRACKET> IsSetList() <RBRACKET>
+}
+void IsSetList() throws CompilationException:{}{
+    AtomicExpr() { cp.doIsSet(); } ( <CAMMA> AtomicExpr() { cp.doAdditionalIsSet(); } )*
 }
 void FunctionDeclaration()throws CompilationException:{
     Token t;
@@ -1062,7 +1077,7 @@ void FunctionDeclaration()throws CompilationException:{
 }{
     <FUNCTION> [ <BITAND> { ref = true; } ] t = <IDENTIFIER> { cp.doBeginFunctionDeclaration(t.image,ref); }
     <LBRACKET> ParametreList() <RBRACKET>
-    ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET> { cp.doEndFunction(); }
+    <LBBRACKET> InnerStatementList() <RBBRACKET> { cp.doEndFunction(); }
 }
 void ParametreList()throws CompilationException:{}{
     [ ParametreListItem() ( <CAMMA> ParametreListItem() )* ]
@@ -1075,8 +1090,8 @@ void ParametreListItem()throws CompilationException:{
 }{
     [
         <ARRAY> { typename = "array"; }
-        | FullyQualifiedClassName() { typename = (String)$(0).data; }
-    ] [ <BITAND> { is_ref = true;  } ] t = <VARIABLE> [ <ASSIGN> Expr() { hasDefault = true;  } ]
+        | FullyQualifiedClassName() { typename = (String)$().data; }
+    ] [ <BITAND> { is_ref = true;  } ] t = <VARIABLE>  [ <ASSIGN> StaticConsts() { hasDefault = true;  } ]
     { cp.doFunctionParamItem(t.image,typename,is_ref,hasDefault); }
 }
 void FullyQualifiedClassName() throws CompilationException:{}{
@@ -1091,27 +1106,45 @@ void NameSpaceName()throws CompilationException:{
     t = <IDENTIFIER> { sb.append(t.image); } ( <NSSEPERATOR> t = <IDENTIFIER> { sb.append("\\" + t.image); } )* { P(new ZNode(ZNode.IS_CONST,sb.toString())); }
 }
 void ClassName() throws CompilationException:{}{
-    <STATIC> { cp.doFetchStatic(); }
-    | ConstName() {  }
+    NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
+    | <NAMESPACE> <NSSEPERATOR> NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
+    | <NSSEPERATOR> NameSpaceName()
 }
 void ClassNameReference() throws CompilationException:{
     Token t;
 }{
-    LOOKAHEAD(2) ClassName()
+    LOOKAHEAD(2) ClassName() { cp.doFetchClass((String)$().data); }
     | Atom()
 }
 void StaticConsts() throws CompilationException:{}{
-    LOOKAHEAD(2) Constant()
-    | NameSpaceName()
-    | <NAMESPACE> <NSSEPERATOR> NameSpaceName()
-    | <NSSEPERATOR> NameSpaceName()
-    | <PLUS> StaticConsts()
-    | <MINUS> StaticConsts()
-    | <ARRAY> <LBRACKET> ConstArrayBody() <RBRACKET>
-    | <LCBRACKET> ConstArrayBody() <RCBRACKET>
+    LOOKAHEAD(2) StaticConstant()
+    | NameSpaceName() { cp.doStaticConstFindConst((String)$().data); }
+    | <NAMESPACE> <NSSEPERATOR> NameSpaceName() { cp.doStaticConstFindConst(cp.getCurrentNameSpace() + (String)$().data); }
+    | <NSSEPERATOR> NameSpaceName() { cp.doStaticConstFindConst((String)$().data); }
+    | <PLUS> StaticConsts() { cp.doStaticConstPosOptr(); }
+    | <MINUS> StaticConsts() { cp.doStaticConstNegOptr(); }
+    | <ARRAY> <LBRACKET> { cp.doStaticConstArray(); } ConstArrayBody() <RBRACKET>
+    | <LCBRACKET> { cp.doStaticConstArray(); } ConstArrayBody() <RCBRACKET>
+}
+
+void StaticConstant()throws CompilationException:{
+    Token t;
+}{
+    t = <NOMBRE> { cp.doStaticConstFloat(Double.parseDouble(t.image)); }
+    | t = <INTEGER> { cp.doStaticConstInt(Integer.parseInt(t.image)); }
+    | t = <PSTRING> { cp.doStaticConstString(t.image); }
+    | <BEGIN_OF_SSTRING> t = <OTHERS_IN_STRING> <END_OF_STRING> { cp.doStaticConstString(t.image); }
+    | <CLASS_C>
+    | <TRAIT_C>
+    | <FUNCTION_C>
+    | <METHOD_C>
+    | <LINE_C>
+    | <FILE_C>
+    | <DIR_C>
+    | <NAMESPACE_C> { cp.doStaticConstString(cp.getCurrentNameSpace()); }
 }
 void ConstName() throws CompilationException:{}{
-    NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
+    NameSpaceName() { $(0).data = cp.buildNameSpaceName((String)$(0).data); }
     | <NAMESPACE> <NSSEPERATOR> NameSpaceName() { $(0).data = cp.getCurrentNameSpace() + $(0).data; }
     | <NSSEPERATOR> NameSpaceName()
 }

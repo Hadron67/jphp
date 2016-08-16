@@ -1,69 +1,98 @@
 package com.hadroncfy.jphp.jzend.compile;
+import com.hadroncfy.jphp.jzend.compile.ins.*;
+import com.hadroncfy.jphp.jzend.types.*;
+
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.*;
-import java.util.function.Consumer;
 
 /** Created by cfy on 16-5-12. */
 public class JZendCompiler {
+    private LineGetter lineGetter;
     private Stack<String> ns_stack;
-    private List<Instruction> op_array;
-    private List<Instruction> current_array;
+    private List<Warning> warnings = new LinkedList<>();
+
+    private Routine top_routine;
+    private Routine current_routine;
+
+    private CompilerContext ctx;
 
     private Stack<IfContext> ifstmt_stack;
     private Stack<SwitchContext> switchstmt_stack;
-    private Stack<DoubleIntIns> loop_entry_stack;
     private Stack<IntIns> while_loop_escape_stack;
     private Stack<Integer> do_while_loop_entry_stack;
     private Stack<ForContext> for_loop_stack;
     private Stack<ForEachContext> foreach_context_stack;
     private Stack<IntIns> conditional_expr_stack;
     private Stack<TryCatchContext> try_catch_stack;
-    private Stack<Instruction> func_stack;
-    private Stack<ScopeContext> scope_stack;
+
+    private Stack<Zval> const_eval_stack = new Stack<>();
+
 
     private RegMgr regmgr;
 
-    //variales for function declaration
-    private FunctionDeclareIns current_func;
-    private IntIns function_skip_ins;
-    private int func_default_values_temp_reg;
+    ZendFunction current_function;
 
+    private int getLine(){ return current_routine.getLine(); }
 
+    protected Instruction addIns(Instruction ins){ current_routine.addIns(ins);return ins; }
 
-    private int getLine(){ return op_array.size(); }
-    protected Instruction addIns(Instruction ins){ current_array.add(ins);return ins; }
-    public void printInstructionList(PrintStream ps){
-        int line = 0;
-        for (Instruction op : op_array)
-            ps.println(line++ + "    " + op.toString());
+    private Instruction getLastIns(){
+        return current_routine.getLastIns();
     }
-    private Instruction getIns(int i){
-        return current_array.get(current_array.size() - i - 1);
+
+    private CompilationException generateException(String msg){
+        return new CompilationException(lineGetter.getLine(),lineGetter.getColumn(),msg);
     }
+
+    private void addWarning(String msg){
+        warnings.add(new Warning(Warning.WARN,msg,lineGetter.getLine(),lineGetter.getColumn()));
+    }
+
+    private void addNotice(String msg){
+        warnings.add(new Warning(Warning.NOTICE,msg,lineGetter.getLine(),lineGetter.getColumn()));
+    }
+
+    public void printWarnings(PrintStream ps){
+        for(Warning w : warnings){
+            ps.println(w.toString());
+        }
+    }
+
+    public boolean hasWarning(){
+        return !warnings.isEmpty();
+    }
+
     public JZendCompiler(){
-        op_array = new ArrayList<>();
-        current_array = op_array;
-
         ns_stack = new Stack<>();
         ns_stack.push("");
 
         ifstmt_stack = new Stack<>();
-        loop_entry_stack = new Stack<>();
         while_loop_escape_stack = new Stack<>();
         do_while_loop_entry_stack = new Stack<>();
         for_loop_stack = new Stack<>();
         switchstmt_stack = new Stack<>();
         conditional_expr_stack = new Stack<>();
         try_catch_stack = new Stack<>();
-        scope_stack = new Stack<>();
+        //scope_stack = new Stack<>();
         foreach_context_stack = new Stack<>();
         regmgr = new RegMgr();
+        ctx = CompilerContext.newGlobalContext();
 
-        enterScope();
+        top_routine = current_routine = Routine.newGlobalRoutine();
 
     }
 
-    public void DoBinaryOptr(int token_type) {
+    public Routine compile(InputStream stream) throws CompilationException, ParseException {
+        JZendParser parser = new JZendParser(stream);
+        lineGetter = parser;
+        parser.setCompiler(this);
+        parser.Parse();
+        finishCompiling();
+        return top_routine;
+    }
+
+    protected void DoBinaryOptr(int token_type) {
         int op = 0;
         switch (token_type){
             case JZendParserConstants.AND: { op = Opcode.AND;break; }
@@ -91,12 +120,12 @@ public class JZendCompiler {
             case JZendParserConstants.TIMES: op = Opcode.TIMES;break;
             case JZendParserConstants.DIVIDE: op = Opcode.DIVIDE;break;
             case JZendParserConstants.MOD:op = Opcode.MOD;break;
-            default: assert false;
+            default:throw new AssertionError("Unknown binary operator:" + token_type);
         }
         addIns(new Instruction((op)));
     }
 
-    public void DoUnaryOptr(int token_type) {
+    protected void DoUnaryOptr(int token_type) {
         int op = 0;
         switch (token_type){
             case JZendParserConstants.INC:op = Opcode.PRE_INC;break;
@@ -111,41 +140,36 @@ public class JZendCompiler {
         addIns(new Instruction(op));
     }
 
-    public void DoPostIncOrDec(boolean is_dec) {
+    protected void DoPostIncOrDec(boolean is_dec) {
         addIns(new Instruction(is_dec ? Opcode.POST_DEC : Opcode.POST_INC));
     }
 
-    public void DoDup() {
+    protected void DoDup() {
         addIns(new Instruction(Opcode.DUP));
     }
 
 
-    public void DoNull() { addIns(new Instruction(Opcode.NULL)); }
+    protected void DoNull() { addIns(new Instruction(Opcode.NULL)); }
 
 
-    public void DoNewArray() { addIns(new Instruction(Opcode.NEW_ARRAY)); }
+    protected void DoNewArray() { addIns(new Instruction(Opcode.NEW_ARRAY)); }
 
 
-    public void DoAddArrayItem(boolean is_map) {
+    protected void DoAddArrayItem(boolean is_map) {
         if (!is_map)
             addIns(new Instruction(Opcode.ADD_ARRAY_ITEM));
         else
             addIns(new Instruction(Opcode.ADD_ARRAY_MAP_ITEM));
     }
 
-    public void DoRequestArrayPointerItem(boolean is_reference) {
-        if (is_reference)
-            addIns(new Instruction(Opcode.ARRAY_GET_POINTER_ITEM_AS_REFERENCE));
-        else addIns(new Instruction(Opcode.ARRAY_GET_POINTER_ITEM));
-    }
 
-    public void DoDereference() { addIns(new Instruction(Opcode.DEREFERENCE)); }
+    protected void DoDereference() { addIns(new Instruction(Opcode.DEREFERENCE)); }
 
 
-    public void DoPop() { addIns(new Instruction(Opcode.POP)); }
+    protected void DoPop() { addIns(new Instruction(Opcode.POP)); }
 
 
-    public void DoNombre(double n,boolean is_int) {
+    protected void DoNombre(double n,boolean is_int) {
         if(is_int)
             addIns(new IntIns(Opcode.INTEGER,(int)n));
         else
@@ -153,19 +177,74 @@ public class JZendCompiler {
     }
 
 
-    public void DoString(String s) { addIns(new StringIns(Opcode.STRING,s)); }
+    protected void DoString(String s) { addIns(new StringIns(Opcode.STRING,s)); }
 
 
-    public void DoToString() {
-        if (getIns(0).opcode != Opcode.STRING)
+    protected void DoToString() {
+        if (getLastIns().opcode != Opcode.STRING)
             addIns(new Instruction(Opcode.TOSTRING));
     }
 
-    public void doFetchStatic(){
+    protected void doCast(int what){
+        switch(what){
+            case 0:
+                addIns(new Instruction(Opcode.INT_CAST));
+                break;
+            case 1:
+                addIns(new Instruction(Opcode.FLOAT_CAST));
+                break;
+            case 2:
+                addIns(new Instruction(Opcode.STRING_CAST));
+                break;
+            case 3:
+                addIns(new Instruction(Opcode.ARRAY_CAST));
+                break;
+            case 4:
+                addIns(new Instruction(Opcode.OBJECT_CAST));
+                break;
+            case 5:
+                addIns(new Instruction(Opcode.BOOL_CAST));
+                break;
+            case 6:
+                addIns(new Instruction(Opcode.UNSET_CAST));
+                break;
+            default:throw new AssertionError("unknown cast type:" + what);
+        }
+    }
+
+    protected void doBeginSilent(){
+        addIns(new Instruction(Opcode.BEGIN_SILENT));
+    }
+
+    protected void doEndSilent(){
+        addIns(new Instruction(Opcode.END_SILENT));
+    }
+
+    protected void doIncludeOrEval(int type){
+        addIns(new IntIns(Opcode.INCLUDE_OR_EVAL,type));
+    }
+
+    protected void doIsSet() throws CompilationException{
+        convertRvalueToLvalue();
+        addIns(new Instruction(Opcode.IS_SET));
+    }
+
+    protected void doAdditionalIsSet() throws CompilationException{
+        convertRvalueToLvalue();
+        addIns(new Instruction(Opcode.IS_SET));
+        addIns(new Instruction(Opcode.AND));
+    }
+
+    protected void doIsEmpty() throws CompilationException{
+        convertRvalueToLvalue();
+        addIns(new Instruction(Opcode.IS_EMPTY));
+    }
+
+    protected void doFetchStatic(){
         addIns(new Instruction(Opcode.FETCH_CLASS_STATIC));
     }
 
-    public void doFindClassVar(boolean isRef){
+    protected void doFindClassVar(boolean isRef){
         addIns(new IntIns(Opcode.FIND_CLASS_VAR,isRef ? 1 : 0));
     }
 
@@ -193,24 +272,93 @@ public class JZendCompiler {
     }
 
 
-    public void DoConcat(int count) { addIns(new IntIns(Opcode.CONCAT,count)); }
+    protected void doStaticConstInt(int value){
+        const_eval_stack.push(new Zint(value));
+    }
+
+    protected void doStaticConstFloat(double f){
+        const_eval_stack.push(new Zfloat(f));
+    }
+
+    protected void doStaticConstString(String s){
+        const_eval_stack.push(new Zstring(s));
+    }
+
+    protected void doStaticConstPosOptr() throws CompilationException{
+        Zval result = const_eval_stack.pop().pos();
+        if(result == null){
+            throw generateException("'+' is not supported");
+        }
+        const_eval_stack.push(result);
+    }
+
+    protected void doStaticConstNegOptr() throws CompilationException{
+        Zval result = const_eval_stack.pop().neg();
+        if(result == null){
+            throw generateException("'+' is not supported");
+        }
+        const_eval_stack.push(result);
+    }
+
+    protected void doStaticConstArray(){
+        const_eval_stack.push(new Zarray());
+    }
+
+    protected void doStaticConstArrayAddItem(){
+        Zval zval = const_eval_stack.pop();
+        Zarray array = (Zarray) const_eval_stack.pop();
+        array.addItem(zval);
+        const_eval_stack.push(array);
+    }
+
+    protected void doStaticConstArrayAddMapItem(){
+        Zval value = const_eval_stack.pop();
+        Zval key = const_eval_stack.pop();
+        Zarray array = (Zarray) const_eval_stack.pop();
+        if(!Zarray.checkKeyType(key)){
+            addWarning("illegal offset type \"" + key.getTypeName() + "\",this element will be ignored");
+        }
+        array.addItem(key,value);
+        const_eval_stack.push(array);
+    }
+
+    protected void doStaticConstFindConst(String cname){
+        Zval val = top_routine.getConst(cname);
+        if(val == null){
+            addNotice("Use of undefined constant " + cname + " - assumed '" + cname + "' in");
+            val = new Zstring(cname);
+        }
+        const_eval_stack.push(val);
+    }
+
+    protected String buildNameSpaceName(String s){
+        if(!s.equals("NULL")){
+            return getCurrentNameSpace() + s;
+        }
+        return s;
+    }
 
 
-    public void DoRequestMember(boolean is_function) {
+
+
+    protected void DoConcat(int count) { addIns(new IntIns(Opcode.CONCAT,count)); }
+
+
+    protected void DoRequestMember(boolean is_function) {
         if (is_function)
             addIns(new Instruction(Opcode.REQUEST_FUNCTION_MEMBER));
         else addIns(new Instruction(Opcode.REQUEST_MEMBER));
     }
 
 
-    public void DoSubscript(boolean is_max) {
+    protected void DoSubscript(boolean is_max) {
         if (is_max)
             addIns(new Instruction(Opcode.MAX_SUBSCRIPT));
         else
             addIns(new Instruction(Opcode.SUBSCRIPT));
     }
 
-    public void DoFindVariable(String vname,boolean is_ref) {
+    protected void DoFindVariable(String vname,boolean is_ref) {
         if (is_ref)
             addIns(new StringIns(Opcode.FIND_VARIABLE_AS_REFERENCE,vname));
         else
@@ -218,8 +366,8 @@ public class JZendCompiler {
     }
 
 
-    public void DoFindVariableByName(boolean is_ref) {
-        if (getIns(0).opcode != Opcode.STRING && getIns(0).opcode != Opcode.CONCAT)
+    protected void DoFindVariableByName(boolean is_ref) {
+        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
             addIns(new Instruction(Opcode.TOSTRING));
         if (is_ref)
             addIns(new Instruction(Opcode.FIND_VARIABLE_BY_NAME_AS_REFERENCE));
@@ -228,8 +376,8 @@ public class JZendCompiler {
     }
 
 
-    public void CheckWritable() throws CompilationException {
-        int op = getIns(0).opcode;
+    protected void CheckWritable() throws CompilationException {
+        int op = getLastIns().opcode;
         if (op != Opcode.SUBSCRIPT &&
                 op != Opcode.FIND_VARIABLE &&
                 op != Opcode.REQUEST_MEMBER &&
@@ -241,39 +389,50 @@ public class JZendCompiler {
                 op != Opcode.POST_INC &&
                 op != Opcode.POST_DEC &&
                 op != Opcode.FIND_CLASS_VAR)
-            throw new CompilationException( " Invalid Right value.");
+            throw generateException("Invalid Right value ");
     }
 
 
-    public void DoFunctionCall() { addIns(new Instruction(Opcode.FUNCTION_CALL)); }
+    protected void DoFunctionCall() { addIns(new Instruction(Opcode.FUNCTION_CALL)); }
 
 
-    public void DoFindConst(String n) { addIns(new StringIns(Opcode.FIND_CONST,n)); }
+    protected void doFindConst(String n,boolean byname) {
+        if(n.equals("NULL")){
+            addIns(new Instruction(Opcode.NULL));
+        }
+        else {
+            if(byname){
+                addIns(new Instruction(Opcode.FIND_CONST_BY_NAME));
+            }
+            else
+                addIns(new StringIns(Opcode.FIND_CONST, n));
+        }
+    }
 
 
-    public void DoFindFunction(String name) { addIns(new StringIns(Opcode.FIND_FUNCTION,name)); }
+    protected void DoFindFunction(String name) { addIns(new StringIns(Opcode.FIND_FUNCTION,name)); }
 
 
-    public void DoExit() { addIns(new Instruction(Opcode.EXIT)); }
+    protected void DoExit() { addIns(new Instruction(Opcode.EXIT)); }
 
 
-    public void DoPrint() {
-        if (getIns(0).opcode != Opcode.STRING && getIns(0).opcode != Opcode.CONCAT)
+    protected void DoPrint() {
+        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
             addIns(new Instruction(Opcode.TOSTRING));
         addIns(new Instruction(Opcode.PRINT));
     }
 
 
-    public void DoEcho() {
-        if (getIns(0).opcode != Opcode.STRING && getIns(0).opcode != Opcode.CONCAT)
+    protected void DoEcho() {
+        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
             addIns(new Instruction(Opcode.TOSTRING));
         addIns(new Instruction(Opcode.ECHO));
     }
 
 
-    public void convertRvalueToLvalue() throws CompilationException {
+    protected void convertRvalueToLvalue() throws CompilationException {
         CheckWritable();
-        Instruction ins = getIns(0);
+        Instruction ins = getLastIns();
         switch (ins.opcode){
             case Opcode.FIND_VARIABLE:ins.opcode = Opcode.FIND_VARIABLE_AS_REFERENCE;break;
             case Opcode.SUBSCRIPT:ins.opcode = Opcode.SUBSCRIPT_AS_REFERENCE;break;
@@ -287,18 +446,19 @@ public class JZendCompiler {
     }
 
     protected void doArgItem(){
-        Instruction ins = getIns(0);
+        Instruction ins = getLastIns();
         switch (ins.opcode){
             case Opcode.FIND_VARIABLE:ins.opcode = Opcode.FIND_VARIABLE_AS_REFERENCE;break;
             case Opcode.SUBSCRIPT:ins.opcode = Opcode.SUBSCRIPT_AS_REFERENCE;break;
             case Opcode.REQUEST_MEMBER:ins.opcode = Opcode.REQUEST_MEMBER_AS_REFERENCE;break;
             case Opcode.FIND_VARIABLE_BY_NAME:ins.opcode = Opcode.FIND_VARIABLE_BY_NAME_AS_REFERENCE;break;
             case Opcode.MAX_SUBSCRIPT:ins.opcode = Opcode.MAX_SUBSCRIPT_AS_REFERENCE;break;
+            case Opcode.FIND_CLASS_VAR:((IntIns)ins).ins = 1;
         }
     }
 
 
-    public void DoBeginIfStatement() {
+    protected void DoBeginIfStatement() {
         IfContext con = new IfContext();
         IntIns ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
         addIns(ins);
@@ -307,7 +467,7 @@ public class JZendCompiler {
     }
 
 
-    public void DoEndIfBlock() {
+    protected void DoEndIfBlock() {
         IntIns ins = new IntIns(Opcode.GOTO);
         addIns(ins);
         ifstmt_stack.peek().last_ins.ins = getLine();
@@ -316,14 +476,14 @@ public class JZendCompiler {
     }
 
 
-    public void DoElseIfBlock() {
+    protected void DoElseIfBlock() {
         IntIns ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
         addIns(ins);
         ifstmt_stack.peek().last_ins = ins;
     }
 
 
-    public void DoEndIfStatement() {
+    protected void DoEndIfStatement() {
         IfContext con = ifstmt_stack.pop();
         if (con.last_ins != null) /*if not true,there isn't an else block.*/
             con.last_ins.ins = getLine();
@@ -331,7 +491,7 @@ public class JZendCompiler {
     }
 
 
-    public void DoConditionalExpr(int where) {
+    protected void DoConditionalExpr(int where) {
         switch (where){
             case 0:/*begin of first expression*/
                 IntIns ins = new IntIns(Opcode.CONDITIONAL_GOTO);
@@ -355,13 +515,14 @@ public class JZendCompiler {
     }
 
 
-    public void DoWhileStatement(int where) {
+    protected void DoWhileStatement(int where) {
         switch (where){
-            case 0:/*begin of while*/
-                DoubleIntIns ins = new DoubleIntIns(Opcode.BEGIN_LOOP);
-                addIns(ins);
-                ins.ins1 = getLine();
-                loop_entry_stack.push(ins);
+            case 0://begin of while
+//                DoubleIntIns ins = new DoubleIntIns(Opcode.BEGIN_LOOP);
+//                addIns(ins);
+//                ins.ins1 = getLine();
+//                loop_entry_stack.push(ins);
+                ctx.enterLoop(getLine());
                 break;
             case 1://end of expression,begin of block
                 IntIns ins2 = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
@@ -369,43 +530,38 @@ public class JZendCompiler {
                 while_loop_escape_stack.push(ins2);
                 break;
             case 2://end if the while statement
-                DoubleIntIns entry_ins = loop_entry_stack.pop();
-                IntIns ins3 = new IntIns(Opcode.GOTO,entry_ins.ins1);
+                //DoubleIntIns entry_ins = loop_entry_stack.pop();
+                IntIns ins3 = new IntIns(Opcode.GOTO,ctx.getLoopStartLine());
                 addIns(ins3);
                 while_loop_escape_stack.pop().ins = getLine();
-                entry_ins.ins2 = getLine();
+                //entry_ins.ins2 = getLine();
+                ctx.leaveLoop(getLine());
                 break;
             default:throw new AssertionError("Unknown location:" + where);
         }
     }
 
-    public void DoDoWhileStatement(int where) {
+    protected void DoDoWhileStatement(int where) {
         switch(where){
             case 0://begin of code block
-                DoubleIntIns ins = new DoubleIntIns(Opcode.BEGIN_LOOP);
-                addIns(ins);
                 do_while_loop_entry_stack.push(getLine());
-                loop_entry_stack.push(ins);
                 break;
             case 1://end of code block,begin of expression
-                loop_entry_stack.peek().ins1 = getLine();
+                ctx.enterLoop(getLine());
                 break;
             case 2://end of expression
                 addIns(new IntIns(Opcode.CONDITIONAL_GOTO,do_while_loop_entry_stack.pop()));
-                loop_entry_stack.pop().ins2 = getLine();
+                ctx.leaveLoop(getLine());
                 break;
             default:throw new AssertionError("Unknown location in do-while:" + where);
         }
     }
 
-    public void DoForStatement(int where) {
+    protected void DoForStatement(int where) {
         switch(where){
             case 0://end of the first expression,begin of second expression
                 addIns(new Instruction(Opcode.POP));
-                DoubleIntIns ins = new DoubleIntIns(Opcode.BEGIN_LOOP);
-                addIns(ins);
-                ins.ins1 = getLine();
-                loop_entry_stack.push(ins);
+                ctx.enterLoop(getLine());
                 for_loop_stack.push(new ForContext());
                 break;
             case 1://end of second expression,begin of third expression
@@ -415,33 +571,29 @@ public class JZendCompiler {
                 for_loop_stack.peek().loop_line = getLine();
                 break;
             case 2://end of third expression,begin of code block
-                IntIns ins_goto = new IntIns(Opcode.GOTO,loop_entry_stack.peek().ins1);
+                IntIns ins_goto = new IntIns(Opcode.GOTO,ctx.getLoopStartLine());
                 addIns(ins_goto);
                 for_loop_stack.peek().cond_ins.ins1 = getLine();
                 break;
             case 3://end of code block
-                DoubleIntIns loopbegin = loop_entry_stack.pop();
                 addIns(new IntIns(Opcode.GOTO,for_loop_stack.peek().loop_line));
-                loopbegin.ins2 = getLine();
                 for_loop_stack.peek().cond_ins.ins2 = getLine();
+                ctx.leaveLoop(getLine());
                 for_loop_stack.pop();
                 break;
             default:throw new AssertionError("Unknown location in for-statement:" + where);
         }
     }
 
-    public void doForEachStatement(int where) {
+    protected void doForEachStatement(int where) {
         switch(where){
             case 0://end of the foreach_expr
                 ForEachContext fctx = new ForEachContext();
-                DoubleIntIns loop_entry = new DoubleIntIns(Opcode.BEGIN_LOOP);
-                loop_entry_stack.push(loop_entry);
                 foreach_context_stack.push(fctx);
                 DoubleIntIns iterator_ins = new DoubleIntIns(Opcode.ARRAY_ITERATOR,0,0);
                 addIns(iterator_ins);
                 addIns(new IntIns(Opcode.TSTORE,fctx.getTempRegister()));
-                addIns(loop_entry);
-                loop_entry.ins1 = getLine();
+                ctx.enterLoop(getLine());
                 fctx.iterator_ins = iterator_ins;
                 addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
                 addIns(new Instruction(Opcode.ITERATOR_END));
@@ -453,8 +605,8 @@ public class JZendCompiler {
                 addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
                 addIns(new Instruction(Opcode.ITERATOR_NEXT));
                 addIns(new IntIns(Opcode.TSTORE,fctx.getTempRegister()));
-                addIns(new IntIns(Opcode.GOTO,loop_entry_stack.peek().ins1));
-                loop_entry_stack.pop().ins2 = getLine();
+                addIns(new IntIns(Opcode.GOTO,ctx.getLoopStartLine()));
+                ctx.leaveLoop(getLine());
                 fctx.escape_ins.ins = getLine();
                 foreach_context_stack.pop().finish();
                 break;
@@ -485,15 +637,12 @@ public class JZendCompiler {
         addIns(new Instruction(Opcode.POP));
     }
 
-    public void DoSwitchStatement(int where) {
+    protected void DoSwitchStatement(int where) {
         switch(where){
             case 0://begin of switch statement
                 SwitchContext sctx = new SwitchContext();
                 switchstmt_stack.push(sctx);
-                DoubleIntIns ins = new DoubleIntIns(Opcode.BEGIN_LOOP);
-                ins.ins1 = -1;
-                addIns(ins);
-                loop_entry_stack.push(ins);
+                ctx.enterSwitch();
                 break;
             case 1://end of expression,begin of code block
                 addIns(new IntIns(Opcode.TSTORE,switchstmt_stack.peek().treg_index));
@@ -502,25 +651,25 @@ public class JZendCompiler {
                 switchstmt_stack.peek().last_ins = ins1;
                 break;
             case 2://end of the statement
-                SwitchContext ctx = switchstmt_stack.peek();
-                if(ctx.first_default_line != -1){
+                SwitchContext sctx2 = switchstmt_stack.peek();
+                if(sctx2.first_default_line != -1){
                     IntIns skip_ins = new IntIns(Opcode.GOTO);
                     addIns(skip_ins);
-                    ctx.last_ins.ins = getLine();
-                    addIns(new IntIns(Opcode.GOTO,ctx.first_default_line));
+                    sctx2.last_ins.ins = getLine();
+                    addIns(new IntIns(Opcode.GOTO,sctx2.first_default_line));
                     skip_ins.ins = getLine();
                 }
                 else{
-                    ctx.last_ins.ins = getLine();
+                    sctx2.last_ins.ins = getLine();
                 }
-                loop_entry_stack.pop().ins2 = getLine();
+                ctx.leaveSwitch(getLine());
                 switchstmt_stack.pop().finish();
                 break;
             default:throw new AssertionError("Unknown location in switch:" + where);
         }
     }
 
-    public void DoSwitchLabel(int which) {
+    protected void DoSwitchLabel(int which) {
         SwitchContext sctx = switchstmt_stack.peek();
         switch(which){
             case 0://case label begin
@@ -546,76 +695,53 @@ public class JZendCompiler {
         }
     }
 
-    public void DoBreakOrContinue(int which,boolean has_expr) {
+    protected void DoBreakOrContinue(int which,boolean has_expr) throws CompilationException {
         if(!has_expr)
             addIns(new IntIns(Opcode.INTEGER,1));
         switch(which){
             case 0://break
-                addIns(new Instruction(Opcode.BREAK));
+                if(!ctx.isBreakAvailable()){
+                    throw generateException("cannot break here.");
+                }
+                addIns(ctx.newBreakInstruction());
                 break;
             case 1://continue
-                addIns(new Instruction(Opcode.CONTINUE));
+                if(!ctx.isContinueAvailable()){
+                    throw generateException("cannot continue here.");
+                }
+                addIns(ctx.newContinueInstruction());
                 break;
             default:throw new AssertionError("Unknown statement:" + which);
         }
     }
 
-    public void DoBeginTry() {
-        TryCatchContext ctx = new TryCatchContext();
-        try_catch_stack.push(ctx);
-        ctx.entry = new IntIns(Opcode.BEGIN_TRY);
-        addIns(ctx.entry);
-
+    protected void DoBeginTry() {
+        this.ctx.enterTryBlock(getLine());
     }
 
-    public void DoCatchBlock(boolean is_first,String vname,String typename) {
-        TryCatchContext ctx = try_catch_stack.peek();
+    protected void DoCatchBlock(boolean is_first,String vname,String typename) {
 
-        IntIns ins = new IntIns(Opcode.GOTO);
-        addIns(ins);
-        ctx.escape_ins.add(ins);
         if(is_first) {
-            addIns(new IntIns(Opcode.TSTORE,ctx.getTempReg()));
-            ctx.entry.ins = getLine();
+            ctx.leaveTryBlock(getLine());
         }
-        if((ins = ctx.last_ins) != null){
-            ins.ins = getLine();
-        }
-        if(!typename.equals("")){
-            addIns(new IntIns(Opcode.TLOAD,ctx.getTempReg()));
-            DoFindClass(typename);
-            DoInstanceOf();
-            ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
-            addIns(ins);
-            ctx.last_ins = ins;
-        }
-        else{
-            ctx.last_ins = null;
-        }
-        addIns(new IntIns(Opcode.TLOAD,ctx.getTempReg()));
-        DoFindVariable(vname,true);
-        doAssign(false);
+
+        int from = ctx.getTryStart();
+        int to = ctx.getTryEnd();
+
+        current_routine.addExceptionItem(from,to,getLine(),typename,vname);
+    }
+
+    protected void DoEndTryCatchBlock() {
+        ctx.endTryCatch();
 
     }
 
-    public void DoEndTryCatchBlock() {
-        TryCatchContext ctx = try_catch_stack.peek();
-        IntIns tins = new IntIns(Opcode.GOTO);
-        addIns(tins);
-        if(ctx.last_ins != null){
-            ctx.last_ins.ins = getLine();
-        }
-        int index = ctx.getTempReg();
-        addIns(new IntIns(Opcode.TLOAD,index));
-        addIns(new Instruction(Opcode.THROW));
-        ctx.finish(getLine());
-        tins.ins = getLine();
-
-    }
-
-    public void DoReturnOrThrow(int which) {
+    protected void DoReturnOrThrow(int which) {
         switch(which){
             case 0://return
+                if(current_function != null){
+                    current_function.hasReturn = true;
+                }
                 addIns(new Instruction(Opcode.RETURN));
                 break;
             case 1://throw
@@ -625,72 +751,62 @@ public class JZendCompiler {
         }
     }
 
-    public void DoUnset() throws CompilationException {
+    protected void DoUnset() throws CompilationException {
         convertRvalueToLvalue();
         addIns(new Instruction(Opcode.UNSET));
     }
 
-    public void DoDeclareConst(String name) {
-        addIns(new StringIns(Opcode.DECLARE_CONST,name));
+    protected void doDeclareConst(String name) {
+        Zval var = const_eval_stack.pop();
+        if(!const_eval_stack.isEmpty()){
+            throw new AssertionError("this stack should be empty now.");
+        }
+        top_routine.addConst(name,var);
     }
 
-    public void DoGlobal(String name) {
+    protected void DoGlobal(String name) {
         addIns(new StringIns(Opcode.GLOBAL,name));
     }
 
-    public void finishCompiling() {
-        leaveScope();
+    private void finishCompiling() {
         addIns(new IntIns(Opcode.INTEGER,0));
         addIns(new Instruction(Opcode.EXIT));
+        top_routine.loopTable = ctx.getLoopTable();
     }
 
-    public void doBeginFunctionDeclaration(String fname, boolean is_ref) {
-        current_func = new FunctionDeclareIns(fname);
-        addIns(function_skip_ins = new IntIns(Opcode.GOTO));
-        current_func.entry_line = getLine();
-        func_default_values_temp_reg = regmgr.requestTempReg();
+    protected void doBeginFunctionDeclaration(String fname, boolean is_ref) {
+        current_function = current_routine.newFunction(getCurrentNameSpace() + fname,is_ref);
+        current_routine = current_function;
+        ctx = ctx.newSubContext();
     }
 
-    public void doFunctionParamItem(String vname, String typename,boolean is_ref,boolean hasDefault) {
-        current_func.addArg(vname,typename,is_ref);
+    protected void doFunctionParamItem(String vname, String typename,boolean is_ref,boolean hasDefault) {
         if(hasDefault){
-            addIns(new IntIns(Opcode.TSTORE,func_default_values_temp_reg));
-            addIns(new StringIns(Opcode.FIND_VARIABLE,vname));
-            addIns(new Instruction(Opcode.IS_NULL));
-            IntIns gotoassign = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
-            addIns(gotoassign);
-            addIns(new StringIns(Opcode.FIND_VARIABLE_AS_REFERENCE,vname));
-            addIns(new IntIns(Opcode.TLOAD,func_default_values_temp_reg));
-            addIns(new Instruction(Opcode.ASSIGN));
-            addIns(new Instruction(Opcode.POP));
-            gotoassign.ins = getLine();
+            current_function.addArg(vname,typename,is_ref,const_eval_stack.pop());
+            assert const_eval_stack.isEmpty();
+        }
+        else{
+            current_function.addArg(vname,typename,is_ref);
         }
     }
 
-    public void doFunctionUse(String vname,boolean is_ref){
-        current_func.use(vname,is_ref);
+    protected void doFunctionUse(String vname,boolean is_ref){
+        //current_func.use(vname,is_ref);
     }
 
-    public void doEndFunction() {
-        if(getIns(0).opcode != Opcode.RETURN){
+    protected void doEndFunction() {
+        if(!current_function.hasReturn){
             addIns(new Instruction(Opcode.NULL));
             addIns(new Instruction(Opcode.RETURN));
         }
-        function_skip_ins.ins = getLine();
-        regmgr.freeTempReg(func_default_values_temp_reg);
-        scope_stack.peek().addFunction(current_func);
-        current_func = null;
+        current_function = null;
+        current_routine.loopTable = ctx.getLoopTable();
+        current_routine = current_routine.parent();
+        ctx = ctx.getParent();
     }
 
-    public void enterScope() {
-        scope_stack.push(new ScopeContext());
-    }
 
-    public void leaveScope() {
-        scope_stack.pop().leave();
-    }
-
-    public void doAssign(boolean is_array) {
+    protected void doAssign(boolean is_array) {
         if(!is_array){
             addIns(new Instruction(Opcode.ASSIGN));
         }
@@ -700,38 +816,38 @@ public class JZendCompiler {
 
     }
 
-    public void DoReference() throws CompilationException {
+    protected void DoReference() throws CompilationException {
         convertRvalueToLvalue();
     }
 
-    public void DoNew() {
-        if(getIns(0).opcode == Opcode.FUNCTION_CALL)
-            getIns(0).opcode = Opcode.NEW;
+    protected void DoNew() {
+        if(getLastIns().opcode == Opcode.FUNCTION_CALL)
+            getLastIns().opcode = Opcode.NEW;
         else
             addIns(new Instruction(Opcode.NEW));
     }
 
-    public void DoFindClass(String name) {
+    protected void DoFindClass(String name) {
         addIns(new StringIns(Opcode.FIND_CLASS,name));
     }
 
-    public void DoInstanceOf() {
+    protected void DoInstanceOf() {
         addIns(new Instruction(Opcode.INSTANCEOF));
     }
 
-    public void DoPackArg(int count) {
+    protected void DoPackArg(int count) {
         addIns(new IntIns(Opcode.PACK_ARG,count));
     }
 
-    public String getCurrentNameSpace() {
+    protected String getCurrentNameSpace() {
         return ns_stack.peek();
     }
 
-    public void DoEnterNameSpace(String name) {
+    protected void DoEnterNameSpace(String name) {
         ns_stack.push(ns_stack.peek() + name + "\\");
     }
 
-    public void DoLeaveNameSpace() {
+    protected void DoLeaveNameSpace() {
         ns_stack.pop();
     }
 
@@ -796,33 +912,6 @@ public class JZendCompiler {
         }
         public int getTempRegister(){
             return treg_index;
-        }
-    }
-    class ScopeContext{
-        public int startline;
-        public IntIns ins_goto;
-        private List<FunctionDeclareIns> functions;
-
-        public ScopeContext(){
-            ins_goto = new IntIns(Opcode.GOTO);
-            addIns(ins_goto);
-            startline = getLine();
-            functions = new ArrayList<>();
-        }
-
-        public void addFunction(FunctionDeclareIns ins){
-            functions.add(ins);
-        }
-
-        public void leave(){
-            IntIns skip_ins = new IntIns(Opcode.GOTO);
-            addIns(skip_ins);
-            ins_goto.ins = getLine();
-            for(Instruction ins : functions){
-                addIns(ins);
-            }
-            addIns(new IntIns(Opcode.GOTO,startline));
-            skip_ins.ins = getLine();
         }
     }
 

@@ -1,10 +1,10 @@
-package com.hadroncfy.jphp.jzend.compile;
+package com.hadroncfy;
 
 /**
  * Created by cfy on 16-5-13.
  */
 public class Tools {
-    public static String escapeString(String s){
+    public static String unescapeString(String s){
         StringBuilder sb = new StringBuilder();
         int l = s.length();
         for(int i = 0;i < l;i++){
@@ -26,7 +26,7 @@ public class Tools {
         }
         return sb.toString();
     }
-    public static String UnescapeString(String s){
+    public static String escapeString(String s){
         StringBuilder sb = new StringBuilder();
         int l = s.length();
         for(int i = 0;i < l;i++){
@@ -38,4 +38,5 @@ public class Tools {
         }
         return sb.toString();
     }
+
 }

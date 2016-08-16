@@ -6,7 +6,7 @@ package com.hadroncfy.jphp.jzend.compile;
  */
 public class CompilationException extends Exception {
 
-    public CompilationException(String msg){
-        super(msg);
+    public CompilationException(int line,int column,String msg){
+        super(msg + "at line:" + line + ",column:" + column);
     }
 }

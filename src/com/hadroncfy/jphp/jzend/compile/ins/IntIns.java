@@ -1,4 +1,4 @@
-package com.hadroncfy.jphp.jzend.compile;
+package com.hadroncfy.jphp.jzend.compile.ins;
 
 /**
  * Created by cfy on 16-8-3.

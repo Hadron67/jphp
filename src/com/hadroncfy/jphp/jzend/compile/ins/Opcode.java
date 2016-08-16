@@ -1,4 +1,4 @@
-package com.hadroncfy.jphp.jzend.compile;
+package com.hadroncfy.jphp.jzend.compile.ins;
 
 /**
  * Created by cfy on 16-5-12.
@@ -62,19 +62,19 @@ public interface Opcode {
     GOTO = 55,
     CONDITIONAL_GOTO = 56,
     NULL = 57,
-    BEGIN_LOOP = 58,
+    INCLUDE_OR_EVAL = 58,
     BREAK = 59,
     CONTINUE = 60,
     NEW_ARRAY = 61,
     ADD_ARRAY_ITEM = 62,
     CHECK_REF = 63,
-    IS_NULL = 64,
+    IS_SET = 64,
     OPTIONAL_GOTO = 65,
     ARRAY_ASSIGN = 66,
     NEGTIVE = 67,
     ADD_ARRAY_MAP_ITEM = 68,
-    ARRAY_GET_POINTER_ITEM = 69,
-    ARRAY_GET_POINTER_ITEM_AS_REFERENCE = 70,
+    BEGIN_SILENT = 69,
+    END_SILENT = 70,
     UNSET = 71,
     DECLARE_CONST = 72,
     FETCH_CLASS_STATIC = 73,
@@ -85,7 +85,7 @@ public interface Opcode {
     THROW = 78,
     REQUEST_FUNCTION_MEMBER = 79,
     INSTANCEOF = 80,
-    DEFINE_FUNCTION = 81,
+    IS_EMPTY = 81,
     TLOAD = 82,
     TSTORE = 83,
     INTEGER = 84,
@@ -103,7 +103,16 @@ public interface Opcode {
     FIND_CLASS_CONST = 94,
     FIND_CLASS_FUNCTION = 95,
     FETCH_CLASS_SELF = 96,
-    FETCH_CLASS_PARENT = 97;
+    FETCH_CLASS_PARENT = 97,
+
+    INT_CAST = 98,
+    FLOAT_CAST = 99,
+    STRING_CAST = 100,
+    ARRAY_CAST = 101,
+    OBJECT_CAST = 102,
+    BOOL_CAST = 103,
+    UNSET_CAST = 104,
+    FIND_CONST_BY_NAME = 105;
 
     String[] ins_names = {
             "POP",
@@ -164,19 +173,19 @@ public interface Opcode {
             "GOTO",
             "CONDITIONAL_GOTO",
             "NULL",
-            "BEGIN_LOOP",
+            "INCLUDE_OR_EVAL",
             "BREAK",
             "CONTINUE",
             "NEW_ARRAY",
             "ADD_ARRAY_ITEM",
             "CHECK_REF",
-            "IS_NULL",
+            "IS_SET",
             "OPTIONAL_GOTO",
             "ARRAY_ASSIGN",
             "NEGTIVE",
             "ADD_ARRAY_MAP_ITEM",
-            "ARRAY_GET_POINTER_ITEM",
-            "ARRAY_GET_POINTER_ITEM_AS_REFERENCE",
+            "BEGIN_SILENT",
+            "END_SILENT",
             "UNSET",
             "DECLARE_CONST",
             "FETCH_CLASS_STATIC",
@@ -187,7 +196,7 @@ public interface Opcode {
             "THROW",
             "REQUEST_FUNCTION_MEMBER",
             "INSTANCEOF",
-            "DEFINE_FUNCTION",
+            "IS_EMPTY",
             "TLOAD",
             "TSTORE",
             "INTEGER",
@@ -203,6 +212,14 @@ public interface Opcode {
             "FIND_CLASS_CONST",
             "FIND_CLASS_FUNCTION",
             "FETCH_CLASS_SELF",
-            "FETCH_CLASS_PARENT"
+            "FETCH_CLASS_PARENT",
+            "INT_CAST",
+            "FLOAT_CAST",
+            "STRING_CAST",
+            "ARRAY_CAST",
+            "OBJECT_CAST",
+            "BOOL_CAST",
+            "UNSET_CAST",
+            "FIND_CONST_BY_NAME"
     };
 }

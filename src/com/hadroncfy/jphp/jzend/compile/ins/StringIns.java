@@ -1,4 +1,6 @@
-package com.hadroncfy.jphp.jzend.compile;
+package com.hadroncfy.jphp.jzend.compile.ins;
+
+import com.hadroncfy.Tools;
 
 /**
  * Created by cfy on 16-8-3.
@@ -16,6 +18,6 @@ public class StringIns extends Instruction {
 
     @Override
     public String toString() {
-        return super.toString() + " '" + ins + "'";
+        return super.toString() + " '" + Tools.escapeString(ins) + "'";
     }
 }
