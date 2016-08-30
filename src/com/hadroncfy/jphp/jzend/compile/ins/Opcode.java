@@ -112,7 +112,9 @@ public interface Opcode {
     OBJECT_CAST = 102,
     BOOL_CAST = 103,
     UNSET_CAST = 104,
-    FIND_CONST_BY_NAME = 105;
+    FIND_CONST_BY_NAME = 105,
+
+    NEW_FUNCTION = 106;
 
     String[] ins_names = {
             "POP",
@@ -220,6 +222,7 @@ public interface Opcode {
             "OBJECT_CAST",
             "BOOL_CAST",
             "UNSET_CAST",
-            "FIND_CONST_BY_NAME"
+            "FIND_CONST_BY_NAME",
+            "NEW_FUNCTION"
     };
 }

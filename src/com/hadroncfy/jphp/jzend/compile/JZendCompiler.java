@@ -7,50 +7,62 @@ import java.io.PrintStream;
 import java.util.*;
 
 /** Created by cfy on 16-5-12. */
-public class JZendCompiler {
+public class JZendCompiler implements WarningReporter {
+    public static final int MODIFIER_PUBLIC = 0;
+    public static final int MODIFIER_PRIVATE = 1;
+    public static final int MODIFIER_PROTECTED = 2;
+    public static final int MODIFIER_STATIC = 3;
+    public static final int MODIFIER_FINAL = 4;
+    public static final int MODIFIER_ABSTRACT = 5;
+
+    private String fname;
     private LineGetter lineGetter;
-    private Stack<String> ns_stack;
-    private List<Warning> warnings = new LinkedList<>();
-
     private Routine top_routine;
-    private Routine current_routine;
 
+    private Routine current_routine;
     private CompilerContext ctx;
 
-    private Stack<IfContext> ifstmt_stack;
-    private Stack<SwitchContext> switchstmt_stack;
-    private Stack<IntIns> while_loop_escape_stack;
-    private Stack<Integer> do_while_loop_entry_stack;
-    private Stack<ForContext> for_loop_stack;
-    private Stack<ForEachContext> foreach_context_stack;
-    private Stack<IntIns> conditional_expr_stack;
-    private Stack<TryCatchContext> try_catch_stack;
-
+    private Stack<String> ns_stack = new Stack<>();
+    private List<Warning> warnings = new LinkedList<>();
+    private Stack<IfContext> ifstmt_stack = new Stack<>();
+    private Stack<SwitchContext> switchstmt_stack = new Stack<>();
+    private Stack<IntIns> while_loop_escape_stack = new Stack<>();
+    private Stack<Integer> do_while_loop_entry_stack = new Stack<>();
+    private Stack<ForContext> for_loop_stack = new Stack<>();
+    private Stack<ForEachContext> foreach_context_stack = new Stack<>();
+    private Stack<IntIns> conditional_expr_stack = new Stack<>();
+    //private Stack<ZendFunction> func_stack = new Stack<>();
+    private Stack<ZendClass> class_stack = new Stack<>();
     private Stack<Zval> const_eval_stack = new Stack<>();
+    private MemberBuilder mbuilder = new MemberBuilder(this);
+    private RegMgr regmgr = new RegMgr();
 
 
-    private RegMgr regmgr;
+    private FunctionHead currentHead;
 
-    ZendFunction current_function;
 
     private int getLine(){ return current_routine.getLine(); }
 
-    protected Instruction addIns(Instruction ins){ current_routine.addIns(ins);return ins; }
+    protected Instruction addIns(Instruction ins){
+        ins.line = lineGetter.getLine();
+        current_routine.addIns(ins);
+        return ins;
+    }
 
     private Instruction getLastIns(){
         return current_routine.getLastIns();
     }
 
-    private CompilationException generateException(String msg){
-        return new CompilationException(lineGetter.getLine(),lineGetter.getColumn(),msg);
+    protected CompilationException generateException(String msg){
+        return new CompilationException(lineGetter.getLine(),lineGetter.getColumn(),fname,msg);
     }
 
-    private void addWarning(String msg){
-        warnings.add(new Warning(Warning.WARN,msg,lineGetter.getLine(),lineGetter.getColumn()));
+    public void addWarning(String msg){
+        warnings.add(new Warning(Warning.WARN,msg,lineGetter.getLine(),lineGetter.getColumn(),fname));
     }
 
-    private void addNotice(String msg){
-        warnings.add(new Warning(Warning.NOTICE,msg,lineGetter.getLine(),lineGetter.getColumn()));
+    public void addNotice(String msg){
+        warnings.add(new Warning(Warning.NOTICE,msg,lineGetter.getLine(),lineGetter.getColumn(),fname));
     }
 
     public void printWarnings(PrintStream ps){
@@ -64,32 +76,29 @@ public class JZendCompiler {
     }
 
     public JZendCompiler(){
-        ns_stack = new Stack<>();
-        ns_stack.push("");
-
-        ifstmt_stack = new Stack<>();
-        while_loop_escape_stack = new Stack<>();
-        do_while_loop_entry_stack = new Stack<>();
-        for_loop_stack = new Stack<>();
-        switchstmt_stack = new Stack<>();
-        conditional_expr_stack = new Stack<>();
-        try_catch_stack = new Stack<>();
-        //scope_stack = new Stack<>();
-        foreach_context_stack = new Stack<>();
-        regmgr = new RegMgr();
-        ctx = CompilerContext.newGlobalContext();
-
-        top_routine = current_routine = Routine.newGlobalRoutine();
-
+        this(Routine.newGlobalRoutine());
     }
 
-    public Routine compile(InputStream stream) throws CompilationException, ParseException {
+    public JZendCompiler(Routine routine){
+        ns_stack.push("");
+
+        ctx = CompilerContext.newGlobalContext();
+
+        top_routine = current_routine = routine;
+    }
+
+    public Routine compile(InputStream stream,String fname) throws CompilationException, ParseException {
+        this.fname = fname;
         JZendParser parser = new JZendParser(stream);
         lineGetter = parser;
         parser.setCompiler(this);
         parser.Parse();
         finishCompiling();
         return top_routine;
+    }
+
+    public Routine compile(InputStream stream) throws ParseException, CompilationException {
+        return compile(stream, "-");
     }
 
     protected void DoBinaryOptr(int token_type) {
@@ -323,12 +332,30 @@ public class JZendCompiler {
     }
 
     protected void doStaticConstFindConst(String cname){
-        Zval val = top_routine.getConst(cname);
+        Zval val = resolveConst(cname);
         if(val == null){
             addNotice("Use of undefined constant " + cname + " - assumed '" + cname + "' in");
             val = new Zstring(cname);
         }
         const_eval_stack.push(val);
+    }
+
+    protected Zval resolveConst(String cname){
+        Zval val = top_routine.getConst(cname);
+        if(val == null){
+            if(cname.equals("NULL")){
+                return Znull.NULL;
+            }
+            else if(cname.equals("true")){
+                return Zbool.TRUE;
+            }
+            else if(cname.equals("false")){
+                return Zbool.FALSE;
+            }
+            else
+                return null;
+        }
+        return val;
     }
 
     protected String buildNameSpaceName(String s){
@@ -338,8 +365,172 @@ public class JZendCompiler {
         return s;
     }
 
+    protected void doBeginClass(ZendClass.ClassType type,String cname) throws CompilationException {
+        if(current_routine.getZClass(cname) != null){
+            throw generateException("Cannot redeclare class " + cname);
+        }
+        class_stack.push(ZendClass.createClassByType(cname,type));
+    }
+
+    protected void doClassExtends(String cname) throws CompilationException{
+        try {
+            class_stack.peek().addExtends(cname);
+        } catch (IllegalClassOperationException e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doClassImplement(String cname) throws CompilationException{
+        try {
+            class_stack.peek().addImplement(cname);
+        } catch (IllegalClassOperationException e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doClassConst(String cname) throws CompilationException{
+        Zval value = const_eval_stack.pop();
+        try {
+            class_stack.peek().addConst(cname,value);
+        } catch (IllegalClassOperationException | RedeclareException  e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doPrepareModifierParse(){
+        mbuilder.reInit();
+    }
+
+    protected void doModifier(int m) throws CompilationException{
+
+        try {
+            switch (m) {
+                case MODIFIER_PUBLIC:
+                    mbuilder.addAccess(Access.PUBLIC);
+                    break;
+                case MODIFIER_PROTECTED:
+                    mbuilder.addAccess(Access.PROTECTED);
+                    break;
+                case MODIFIER_PRIVATE:
+                    mbuilder.addAccess(Access.PRIVATE);
+                    break;
+                case MODIFIER_FINAL:
+                    mbuilder.addFinal();
+                    break;
+                case MODIFIER_STATIC:
+                    mbuilder.addStatic();
+                    break;
+                case MODIFIER_ABSTRACT:
+                    mbuilder.addAbstract();
+                    break;
+                default:
+                    assert false;
+            }
+        }
+        catch (IllegalModifierException e){
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doAddVarMember(String vname,boolean hasDefault) throws CompilationException {
+        Zval value = hasDefault ? const_eval_stack.pop() : Znull.NULL;
+        assert const_eval_stack.isEmpty();
+        try {
+            class_stack.peek().addVar(vname,mbuilder.buildVar(value));
+        } catch (IllegalClassOperationException | IllegalModifierException | RedeclareException e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doPrepareMethod(String name,boolean isRef){
+        currentHead = new MethodHead(name,isRef,class_stack.peek());
 
 
+    }
+
+    private boolean inInterface(){
+        return !class_stack.isEmpty() && (class_stack.peek() instanceof Interface);
+    }
+
+    protected void doBeginMethodBody(boolean hasBody) throws CompilationException {
+        ClassMember<ZendMethod> method;
+        try {
+            method = mbuilder.buildMethod((MethodHead) currentHead,inInterface());
+        } catch (IllegalModifierException e) {
+            throw generateException(e.getMessage());
+        }
+
+        if(!inInterface()) {
+            if (hasBody && method.member.isAbstract()) {
+                throw generateException("Abstract function " + currentHead.getFullName() + "() cannot contain body");
+            }
+            if (!hasBody && !method.member.isAbstract()) {
+                throw generateException("Non-abstract method " + currentHead.getFullName() + "() must contain body");
+            }
+        }
+        else{
+            if(hasBody){
+                throw generateException("Interface function " + currentHead.getFullName() + "() cannot contain body");
+            }
+        }
+
+        try {
+            class_stack.peek().addMethod(method);
+        } catch (RedeclareException e) {
+            throw generateException(e.getMessage());
+        } catch (InvalidMethodException e) {
+            addWarning(e.getMessage());
+        }
+
+
+        if(hasBody) {
+            ZendFunction body = method.member.getBody();
+            body.setBody(current_routine.newSubRoutine());
+
+            current_routine = body.getBody();
+            //func_stack.push(method.member.body);
+            ctx = ctx.newSubContext();
+        }
+    }
+
+    protected void doEndMethod(){
+        doEndFunction();
+    }
+
+
+    protected void doEndClass() throws CompilationException {
+        ZendClass clazz = class_stack.pop();
+        try {
+            clazz.finishParsing();
+        } catch (IllegalModifierException e) {
+            throw generateException(e.getMessage());
+        }
+        top_routine.addClass(clazz);
+    }
+
+    protected void doAddUse(String s) throws CompilationException {
+        try {
+            class_stack.peek().addUse(s);
+        } catch (IllegalClassOperationException e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doAddTraitAlias(TraitAlias alias) throws CompilationException {
+        try {
+            class_stack.peek().addAliasItem(alias);
+        } catch (IllegalClassOperationException e) {
+            throw generateException(e.getMessage());
+        }
+    }
+
+    protected void doAddTraitExclude(TraitExcluder te) throws CompilationException {
+        try {
+            class_stack.peek().addExcluder(te);
+        } catch (IllegalClassOperationException e) {
+            throw generateException(e.getMessage());
+        }
+    }
 
     protected void DoConcat(int count) { addIns(new IntIns(Opcode.CONCAT,count)); }
 
@@ -389,7 +580,7 @@ public class JZendCompiler {
                 op != Opcode.POST_INC &&
                 op != Opcode.POST_DEC &&
                 op != Opcode.FIND_CLASS_VAR)
-            throw generateException("Invalid Right value ");
+            throw generateException("Invalid right-hand value");
     }
 
 
@@ -739,9 +930,7 @@ public class JZendCompiler {
     protected void DoReturnOrThrow(int which) {
         switch(which){
             case 0://return
-                if(current_function != null){
-                    current_function.hasReturn = true;
-                }
+                current_routine.hasReturn = true;
                 addIns(new Instruction(Opcode.RETURN));
                 break;
             case 1://throw
@@ -757,11 +946,16 @@ public class JZendCompiler {
     }
 
     protected void doDeclareConst(String name) {
-        Zval var = const_eval_stack.pop();
-        if(!const_eval_stack.isEmpty()){
-            throw new AssertionError("this stack should be empty now.");
+        if(current_routine.getConst(name) != null){
+            addNotice("Constant " + name + " already defined");
         }
-        top_routine.addConst(name,var);
+        else {
+            Zval var = const_eval_stack.pop();
+            if (!const_eval_stack.isEmpty()) {
+                throw new AssertionError("this stack should be empty now.");
+            }
+            top_routine.addConst(name, var);
+        }
     }
 
     protected void DoGlobal(String name) {
@@ -774,35 +968,58 @@ public class JZendCompiler {
         top_routine.loopTable = ctx.getLoopTable();
     }
 
-    protected void doBeginFunctionDeclaration(String fname, boolean is_ref) {
-        current_function = current_routine.newFunction(getCurrentNameSpace() + fname,is_ref);
-        current_routine = current_function;
-        ctx = ctx.newSubContext();
+    protected void doBeginFunctionDeclaration(String fname, boolean is_ref) throws CompilationException {
+        ZendFunction f;
+        if((f = current_routine.getFunction(fname)) != null){
+            throw generateException("Cannot redeclare " + fname + "() (previously declared in " + f.getHead().filename +":" + f.getStartLine() + ")");
+        }
+        currentHead = new FunctionHead(fname,is_ref);
+        currentHead.filename = this.fname;
     }
 
-    protected void doFunctionParamItem(String vname, String typename,boolean is_ref,boolean hasDefault) {
+    protected void doBeginFunctionBody(boolean isAnonymous){
+        ZendFunction func = new ZendFunction(currentHead,current_routine.newSubRoutine());
+        if(!isAnonymous){
+            current_routine.addFunction(func);
+        }
+        else{
+            addIns(new NewFuncIns(func));
+        }
+        currentHead = null;
+        current_routine = func.getBody();
+        ctx = ctx.newSubContext();
+        //func_stack.push(func);
+    }
+
+    protected void doFunctionParamItem(String vname, String typename,boolean is_ref,boolean hasDefault) throws CompilationException {
         if(hasDefault){
-            current_function.addArg(vname,typename,is_ref,const_eval_stack.pop());
+            Zval val = const_eval_stack.pop();
+            if(!typename.equals("") && !(val instanceof Znull)){
+                throw generateException("Default value for parameters with a class type hint can only be NULL");
+            }
+            currentHead.addArg(vname,typename,is_ref,val);
             assert const_eval_stack.isEmpty();
         }
         else{
-            current_function.addArg(vname,typename,is_ref);
+            currentHead.addArg(vname,typename,is_ref);
         }
     }
 
     protected void doFunctionUse(String vname,boolean is_ref){
-        //current_func.use(vname,is_ref);
+        currentHead.addUse(vname,is_ref);
     }
 
     protected void doEndFunction() {
-        if(!current_function.hasReturn){
+
+        if(!current_routine.hasReturn){
             addIns(new Instruction(Opcode.NULL));
             addIns(new Instruction(Opcode.RETURN));
         }
-        current_function = null;
+
         current_routine.loopTable = ctx.getLoopTable();
         current_routine = current_routine.parent();
         ctx = ctx.getParent();
+
     }
 
 
@@ -813,7 +1030,6 @@ public class JZendCompiler {
         else{
             addIns(new Instruction(Opcode.ARRAY_ASSIGN));
         }
-
     }
 
     protected void DoReference() throws CompilationException {
@@ -876,25 +1092,7 @@ public class JZendCompiler {
             regmgr.freeTempReg(treg_index);
         }
     }
-    class TryCatchContext{
-        public IntIns entry;
-        public List<IntIns> escape_ins;
-        public IntIns last_ins;
-        private int treg_index;
-        public TryCatchContext(){
-            escape_ins = new ArrayList<>();
-            treg_index = regmgr.requestTempReg();
-        }
-        public void finish(int line){
-            for(IntIns ins : escape_ins){
-                ins.ins = line;
-            }
-            regmgr.freeTempReg(treg_index);
-        }
-        public int getTempReg(){
-            return treg_index;
-        }
-    }
+
     class ForContext{
         DoubleIntIns cond_ins;
         int loop_line;

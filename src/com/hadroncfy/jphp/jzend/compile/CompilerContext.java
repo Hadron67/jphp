@@ -138,6 +138,7 @@ class CompilerContext {
         return tryCatchItemStack.peek().to;
     }
 
+
     class BreakItem {
         int[] table;
         int write_ptr = 0;

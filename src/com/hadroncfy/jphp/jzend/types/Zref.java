@@ -9,11 +9,4 @@ import java.lang.ref.ReferenceQueue;
 public abstract class Zref extends Zval{
     public abstract Zval assign(Zval src);
     public abstract Zval deRef();
-    public Zval fullyDeRef(){
-        Zval ret = deRef();
-        while(ret instanceof Zref){
-            ret = ((Zref) ret).deRef();
-        }
-        return ret;
-    }
 }

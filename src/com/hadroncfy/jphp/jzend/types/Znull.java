@@ -15,7 +15,7 @@ public class Znull extends Zval{
 
     @Override
     public String dump() {
-        return "null";
+        return "NULL";
     }
 
     @Override

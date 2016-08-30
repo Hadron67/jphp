@@ -1,11 +1,14 @@
 package com.hadroncfy.jphp;
 
 
+import com.hadroncfy.jphp.jzend.compile.CompilationException;
 import com.hadroncfy.jphp.jzend.compile.JZendCompiler;
+import com.hadroncfy.jphp.jzend.compile.ParseException;
 import com.hadroncfy.jphp.jzend.compile.Routine;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 
 public class Main {
@@ -17,15 +20,16 @@ public class Main {
 
         try {
             JZendCompiler cp = new JZendCompiler();
-            Routine result = cp.compile(new FileInputStream(args[0]));
+            Routine result = cp.compile(new FileInputStream(args[0]), args[0]);
 
             if(cp.hasWarning()){
                 cp.printWarnings(System.out);
             }
-
             System.out.println("program accepted.");
             result.dump(System.out);
-        } catch (Exception e) {
+        } catch (CompilationException e) {
+            System.out.print("PHP Fatal Error:" + e.getMessage());
+        } catch (FileNotFoundException | ParseException e) {
             e.printStackTrace();
         }
     }

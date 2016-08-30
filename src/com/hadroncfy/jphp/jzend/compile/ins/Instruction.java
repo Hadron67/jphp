@@ -5,6 +5,7 @@ package com.hadroncfy.jphp.jzend.compile.ins;
  */
 public class Instruction implements Opcode {
     public int opcode;
+    public int line;
 
     public Instruction(int opcode){
         this.opcode = opcode;

@@ -9,64 +9,46 @@ import java.util.List;
 /**
  * Created by cfy on 16-8-9.
  */
-public class ZendFunction extends Routine{
-    protected boolean isRef;
-    protected List<ArgItem> args = new ArrayList<>();
-    protected boolean hasReturn = false;
+public class ZendFunction {
+    protected FunctionHead head;
 
-    protected ZendFunction(boolean isRef){
-        this.isRef = isRef;
+    protected Routine body = null;
+
+
+    protected String fname = "-";
+
+    public ZendFunction(FunctionHead head,Routine body){
+        this.head = head;
+        this.body = body;
     }
 
-    protected void addArg(String vname,String typename,boolean isRef,Zval defaultv){
-        ArgItem item = new ArgItem();
-        item.vname = vname;
-        item.typename = typename;
-        item.isRef = isRef;
-        item.defaultv = defaultv;
-        args.add(item);
+    protected ZendFunction(FunctionHead head){
+        this.head = head;
     }
 
-    protected void addArg(String vname,String typename,boolean isRef){
-        addArg(vname,typename,isRef,null);
+    public String getName(){
+        return head.fname;
     }
 
-    @Override
-    protected void dump_self(PrintStream ps) {
-        ps.println(toString());
-        super.dump_self(ps);
+    public FunctionHead getHead(){
+        return head;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("function (");
-        for(ArgItem item : args){
-            if(item.typename.equals("")){
-                sb.append("[any] ");
-            }
-            else{
-                sb.append(item.typename).append(" ");
-            }
-            if(item.isRef){
-                sb.append("&");
-            }
-            sb.append(item.vname);
-            if(item.defaultv != null){
-                sb.append(" = ").append(item.defaultv.dump());
-            }
-            sb.append(",");
-
-        }
-        sb.append(")");
-        return sb.toString();
+    protected Routine getBody(){
+        return body;
     }
 
-    class ArgItem{
-        String vname;
-        String typename;
-        boolean isRef = false;
-        Zval defaultv = null;
+    protected void setBody(Routine body){
+        this.body = body;
+    }
+
+    public int getStartLine(){
+        return body.opcodes.get(0).line;
+    }
+
+    protected void dump_self(Dumper dumper) {
+        dumper.ps.println(head.toString());
+        body.dump_self(dumper);
     }
 
 }

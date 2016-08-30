@@ -544,103 +544,141 @@ void CatchItem(boolean is_first)throws CompilationException:{
 }
 void ClassDeclaration()throws CompilationException:{
     Token t;
+    ZendClass.ClassType type;
 }{
     (
-        <CLASS> {  }
-        | <ABSTRACT> <CLASS> {  }
-        | <TRAIT> {  }
-        | <FINAL> <CLASS> {  }
-    ) t = <IDENTIFIER> {  }
-    [ <EXTENDS> FullyQualifiedClassName() {  } ]
-    [ <IMPLEMENTS> ImplementList() {  } ]
-    <LBBRACKET> ClassBody() <RBBRACKET>
-    | <INTERFACE> t = <IDENTIFIER> {  }
+        <CLASS> { type = ZendClass.ClassType.CLASS; }
+        | <ABSTRACT> <CLASS> { type = ZendClass.ClassType.ABSTRACT_CLASS; }
+        | <TRAIT> { type = ZendClass.ClassType.TRAIT;  }
+        | <FINAL> <CLASS> { type = ZendClass.ClassType.FINAL_CLASS; }
+    ) t = <IDENTIFIER> { cp.doBeginClass(type,t.image); }
+    [ <EXTENDS> FullyQualifiedClassName() { cp.doClassExtends((String)$().data); } ]
+    [ <IMPLEMENTS> ImplementList() ]
+    <LBBRACKET> ClassBody() <RBBRACKET> { cp.doEndClass(); }
+    | <INTERFACE> { type = ZendClass.ClassType.INTERFACE; } t = <IDENTIFIER> { cp.doBeginClass(type,t.image); }
     InterfaceExtendList()
-    <LBBRACKET> ClassBody() <RBBRACKET>
+    <LBBRACKET> ClassBody() <RBBRACKET> { cp.doEndClass(); }
 }
+
 void ImplementList()throws CompilationException:{}{
-    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+    FullyQualifiedClassName() { cp.doClassImplement((String)$().data); }
+    ( <CAMMA> FullyQualifiedClassName() { cp.doClassImplement((String)$().data); } )*
 }
 void InterfaceExtendList()throws CompilationException:{}{
     [ <EXTENDS> InterfaceList() ]
 }
 void InterfaceList()throws CompilationException:{}{
-    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+    FullyQualifiedClassName() { cp.doClassExtends((String)$().data); }
+     ( <CAMMA> FullyQualifiedClassName() { cp.doClassExtends((String)$().data); } )*
 }
 void ClassBody()throws CompilationException:{}{
     ( MemberDecl() | TraitUseStatement() )*
 }
-void MemberDecl()throws CompilationException:{
+void MemberDecl() throws CompilationException:{
     Token t;
+    boolean isAbstract = false;
 }{
-    (
-        ( <PUBLIC> | <VAR> )
-        | <PROTECTED> { }
-        | <PRIVATE> {  }
-        | <STATIC> {  }
-        | <ABSTRACT> {  }
-        | <FINAL> {  }
+    <CONST> ConstMember() ( <CAMMA> ConstMember() )* <EOL>
+    | { cp.doPrepareModifierParse(); } (
+        ( <PUBLIC> | <VAR> ) { cp.doModifier(JZendCompiler.MODIFIER_PUBLIC); }
+        | <PROTECTED> { cp.doModifier(JZendCompiler.MODIFIER_PROTECTED); }
+        | <PRIVATE> { cp.doModifier(JZendCompiler.MODIFIER_PRIVATE); }
+        | <STATIC> { cp.doModifier(JZendCompiler.MODIFIER_STATIC); }
+        | <ABSTRACT> { cp.doModifier(JZendCompiler.MODIFIER_ABSTRACT); }
+        | <FINAL> { cp.doModifier(JZendCompiler.MODIFIER_FINAL); }
     )* (
         VariableMember() ( <CAMMA> VariableMember() )* <EOL>
-        | ConstMember() ( <CAMMA> ConstMember() )* <EOL>
         | MethodMember()
     )
+
 }
 void TraitUseStatement()throws CompilationException:{}{
     <USE> TraitList() TraitAdaptations()
 }
 void TraitList()throws CompilationException:{}{
-    FullyQualifiedClassName() ( <CAMMA> FullyQualifiedClassName() )*
+    FullyQualifiedClassName() { cp.doAddUse((String)$().data); } ( <CAMMA> FullyQualifiedClassName() { cp.doAddUse((String)$().data); } )*
+}
+void TraitExcludeList() throws CompilationException:{
+    Token t;
+    String methodName = (String)$().data;
+    String traitName = (String)$().data;
+    TraitExcluder te = new TraitExcluder(traitName,methodName);
+}{
+    FullyQualifiedClassName() { te.addExcluded((String)$().data); } ( <CAMMA> FullyQualifiedClassName() { te.addExcluded((String)$().data); } )*
+    { cp.doAddTraitExclude(te); }
 }
 void TraitAdaptations()throws CompilationException:{}{
     <EOL>
     | <LBBRACKET> TraitAdaptationList() <RBBRACKET>
 }
-void TraitAdaptationList()throws CompilationException:{}{
+void TraitAdaptationList()throws CompilationException:{
+    Token t;
+}{
     (
-        LOOKAHEAD( <NAMESPACE> | <NSSEPERATOR> | <IDENTIFIER> <NSSEPERATOR> ) TraitMethodReferenceFullyQualified() (
-            <INSTANCEOF> TraitList() <EOL>
+        LOOKAHEAD(2) TraitMethodReferenceFullyQualified() (
+            <INSTEADOF> TraitExcludeList() <EOL>
             | <AS> TraitAliasItem() <EOL>
         )
-        | TraitMethodReference() <AS> TraitAliasItem() <EOL>
+        | t = <IDENTIFIER> { P(new ZNode(ZNode.IS_CONST,t.image)); } <AS> TraitAliasItemWithoutTraitName() <EOL>
     )*
 }
 void TraitAliasItem()throws CompilationException:{
     Token t;
+    String methodName = (String)$().data;
+    String traitName = (String)$().data;
+    TraitAlias alias = new TraitAlias(traitName,methodName);
 }{
     (
-        <PUBLIC> {  }
-        | <PROTECTED>  { }
-        | <PRIVATE> {  }
-    ) [ t = <IDENTIFIER> {  } ]
-    | t = <IDENTIFIER> { }
+        <PUBLIC> { alias.setAliasAccess(Access.PUBLIC); }
+        | <PROTECTED>  { alias.setAliasAccess(Access.PROTECTED); }
+        | <PRIVATE> { alias.setAliasAccess(Access.PRIVATE); }
+    ) [ t = <IDENTIFIER> { alias.setAliasName(t.image); } ]
+    | t = <IDENTIFIER> { alias.setAliasName(t.image);cp.doAddTraitAlias(alias); }
+}
+void TraitAliasItemWithoutTraitName()throws CompilationException:{
+    Token t;
+    String methodName = (String)$().data;
+    TraitAlias alias = new TraitAlias(methodName);
+}{
+    (
+        <PUBLIC> { alias.setAliasAccess(Access.PUBLIC); }
+        | <PROTECTED>  { alias.setAliasAccess(Access.PROTECTED); }
+        | <PRIVATE> { alias.setAliasAccess(Access.PRIVATE); }
+    ) [ t = <IDENTIFIER> { alias.setAliasName(t.image); } ]
+    | t = <IDENTIFIER> { alias.setAliasName(t.image);cp.doAddTraitAlias(alias); }
 }
 void TraitMethodReferenceFullyQualified()throws CompilationException:{
     Token t;
 }{
-    FullyQualifiedClassName() <DOUBLESLICE> t = <IDENTIFIER> {  }
+    FullyQualifiedClassName() <DOUBLESLICE> t = <IDENTIFIER> { P(new ZNode(ZNode.IS_CONST,t.image)); }
 }
 
 void TraitMethodReference()throws CompilationException:{
     Token t;
 }{
-    LOOKAHEAD( <NAMESPACE> | <NSSEPERATOR> | <IDENTIFIER> <NSSEPERATOR> ) TraitMethodReferenceFullyQualified()
-    | t = <IDENTIFIER> {  }
+    LOOKAHEAD(2) TraitMethodReferenceFullyQualified()
+    | t = <IDENTIFIER> { P(new ZNode(ZNode.IS_CONST,t.image)); }
 }
 void VariableMember()throws CompilationException:{
     Token t;
+    boolean hasDefault = false;
 }{
-    t = <VARIABLE> [ <ASSIGN> Expr() ] {  }
+    t = <VARIABLE> [ <ASSIGN> StaticConsts() { hasDefault = true; } ] { cp.doAddVarMember(t.image,hasDefault); }
 }
 void ConstMember()throws CompilationException:{
     Token t;
 }{
-    <CONST> t = <IDENTIFIER> [ <ASSIGN> Expr() ] {  }
+    t = <IDENTIFIER> <ASSIGN> StaticConsts() { cp.doClassConst(t.image); }
 }
 void MethodMember()throws CompilationException:{
     Token t;
+    boolean isRef = false;
 }{
-    <FUNCTION> {  } [ <BITAND> {  } ] t = <IDENTIFIER> <LBRACKET> ParametreList() <RBRACKET> (<EOL> | ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>)
+    <FUNCTION> [ <BITAND> { isRef = true; } ] t = <IDENTIFIER> { cp.doPrepareMethod(t.image,isRef); }
+     <LBRACKET> ParametreList() <RBRACKET> (
+        <EOL> { cp.doBeginMethodBody(false); }
+        | { cp.doBeginMethodBody(true); } ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>  { cp.doEndMethod(); }
+     )
 }
 void InnerStatementList()throws CompilationException:{}{
     ( InnerStatement() )*
@@ -946,7 +984,7 @@ void EcapedVar()throws CompilationException:{
         int a = t.image.lastIndexOf("->");
         int b = t.image.length();
         String vname = t.image.substring(1,a);
-        String property = t.image.substring(a + 2,b - 1);
+        String property = t.image.substring(a + 2,b);
         cp.DoFindVariable(vname,false);
         cp.DoString(property);
         cp.DoRequestMember(false);
@@ -969,8 +1007,14 @@ void Constant()throws CompilationException:{
 }
 void AnonymousFunction()throws CompilationException:{
     Token t;
+    boolean isRef = false;
 }{
-    <FUNCTION> {  } [ <BITAND> {  } ] <LBRACKET> ParametreList() <RBRACKET> ScopeUseList() <LBBRACKET> InnerStatementList() <RBBRACKET>
+    <FUNCTION> [ <BITAND> { isRef = true; } ]
+    { cp.doBeginFunctionDeclaration("(anonymous)",isRef); }
+    <LBRACKET> ParametreList() <RBRACKET>
+    ScopeUseList()
+    { cp.doBeginFunctionBody(true); }
+    <LBBRACKET> InnerStatementList() <RBBRACKET> { cp.doEndFunction(); }
 }
 void ScopeUseList()throws CompilationException:{}{
     [ <USE> <LBRACKET> ScopeUseListItem() ( <CAMMA> ScopeUseListItem() )* <RBRACKET>  ]
@@ -1077,6 +1121,7 @@ void FunctionDeclaration()throws CompilationException:{
 }{
     <FUNCTION> [ <BITAND> { ref = true; } ] t = <IDENTIFIER> { cp.doBeginFunctionDeclaration(t.image,ref); }
     <LBRACKET> ParametreList() <RBRACKET>
+    { cp.doBeginFunctionBody(false); }
     <LBBRACKET> InnerStatementList() <RBBRACKET> { cp.doEndFunction(); }
 }
 void ParametreList()throws CompilationException:{}{

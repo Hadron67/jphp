@@ -1,10 +1,10 @@
 package com.hadroncfy.jphp.jzend.compile;
 
 import com.hadroncfy.jphp.jzend.compile.ins.Instruction;
+import com.hadroncfy.jphp.jzend.compile.ins.NewFuncIns;
 import com.hadroncfy.jphp.jzend.types.Zval;
 
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.util.*;
 
 
@@ -14,26 +14,29 @@ import java.util.*;
 public class Routine{
 
     protected List<Instruction> opcodes = new ArrayList<>();
-    protected List<ExceptionItem> exceptionTable = new ArrayList<>();;
+    protected List<ExceptionItem> exceptionTable = new ArrayList<>();
     protected Routine parent;
+    protected boolean hasReturn = false;
 
-    protected Map<String,Integer> functionTable = new HashMap<>();;
+    protected Map<String,ZendFunction> functionTable = new HashMap<>();
+    protected Map<String,ZendClass> classTable = new HashMap<>();
     protected LoopTable loopTable = new LoopTable();
 
     //all the routines of a program shares the same function array.
-    protected GlobalScope globalScope = new GlobalScope();
+    protected GlobalScope globalScope;
 
     public static Routine newGlobalRoutine(){
         return new Routine(null);
     }
 
-    protected Routine(Routine parent){
+    public Routine(Routine parent){
         if(parent != null){
             this.parent = parent;
             this.globalScope = parent.globalScope;
         }
         else {
             this.parent = null;
+            globalScope = new GlobalScope();
         }
     }
 
@@ -55,14 +58,44 @@ public class Routine{
         return parent;
     }
 
-    protected ZendFunction newFunction(String fname,boolean isRef){
-        ZendFunction func = new ZendFunction(isRef);
-        int index = globalScope.functions.size();
-        globalScope.functions.add(func);
-        functionTable.put(fname,index);
-        func.parent = this;
-        func.globalScope = this.globalScope;
-        return func;
+
+    protected Routine newSubRoutine(){
+        Routine ret = new Routine();
+        ret.parent = this;
+        ret.globalScope = globalScope;
+        return ret;
+    }
+
+    public ZendFunction getFunction(String name){
+        ZendFunction ret = null;
+        Routine r = this;
+        while(r != null){
+            if((ret = r.functionTable.get(name)) != null){
+                return ret;
+            }
+            r = r.parent;
+        }
+        return null;
+    }
+
+    public ZendClass getZClass(String cname){
+        ZendClass ret = null;
+        Routine r = this;
+        while(r != null){
+            if((ret = r.classTable.get(cname)) != null){
+                return ret;
+            }
+            r = r.parent;
+        }
+        return null;
+    }
+
+    protected void addFunction(ZendFunction func){
+        functionTable.put(func.getName(),func);
+    }
+
+    protected void addClass(ZendClass clazz){
+        classTable.put(clazz.getName(),clazz);
     }
 
     protected void addIns(Instruction ins){
@@ -85,40 +118,71 @@ public class Routine{
         return opcodes.get(opcodes.size() - 1);
     }
 
-    protected void dump_self(PrintStream ps){
+    protected void dump_self(Dumper dumper){
+        PrintStream ps = dumper.ps;
         ps.println("------------------------------------");
         ps.println("codes:");
         int line = 0;
         for(Instruction ins : opcodes){
+            if(ins instanceof NewFuncIns){
+                ((NewFuncIns) ins).index = dumper.addFunction(((NewFuncIns) ins).func);
+            }
             ps.println(new StringBuilder().append(line++).append("    ").append(ins.toString()));
         }
-        ps.println("function table:");
-        for(Map.Entry<String,Integer> s : functionTable.entrySet()){
-            ps.println(s.getKey() + " " + s.getValue());
+        if(!functionTable.isEmpty()) {
+            ps.println("function table:");
+            for (Map.Entry<String, ZendFunction> s : functionTable.entrySet()) {
+                ps.println(s.getKey() + " #" + dumper.addFunction(s.getValue()));
+            }
         }
-        ps.println("loopTable:");
-        loopTable.dump(ps);
-        ps.println("exception table:");
-        for(ExceptionItem item : exceptionTable){
-            ps.println(item.from + " " + item.to + " " + item.target + " " + item.typename);
+        if(!classTable.isEmpty()) {
+            ps.println("class table:");
+            for (Map.Entry<String, ZendClass> s : classTable.entrySet()) {
+                ps.println(s.getKey() + " #" + dumper.addClass(s.getValue()));
+            }
+        }
+        if(!loopTable.isEmpty()) {
+            ps.println("loopTable:");
+            loopTable.dump(ps);
+        }
+        if(!exceptionTable.isEmpty()) {
+            ps.println("exception table:");
+            for (ExceptionItem item : exceptionTable) {
+                ps.println(item.from + " " + item.to + " " + item.target + " " + item.typename);
+            }
         }
         ps.println("====================================");
     }
 
     public void dump(PrintStream ps){
-        int index = 0;
-        for(ZendFunction func : globalScope.functions){
-            ps.println("function " + index++ + ":");
-            func.dump_self(ps);
+        ps.println("main block:");
+        Dumper dumper = new Dumper(ps);
+        dump_self(dumper);
+
+        if(!globalScope.constTable.isEmpty()) {
+            ps.println("constants:");
+            ps.println("----------------------------------");
+            for (Map.Entry<String, Zval> entry : globalScope.constTable.entrySet()) {
+                ps.println(entry.getKey() + " : " + entry.getValue().dump());
+
+            }
+        }
+        ps.println();
+
+        while(dumper.hasClass()){
+            Dumper.IndexedItem<ZendClass> item = dumper.consumeOneClass();
+            ps.println("#" + item.getIndex());
+            item.getItem().dump_self(dumper);
+
             ps.println();
         }
-        ps.println("main block:");
-        dump_self(ps);
-        ps.println("constants:");
-        ps.println("----------------------------------");
-        for(Map.Entry<String,Zval> entry : globalScope.constTable.entrySet()){
-            ps.println(entry.getKey() + " : " + entry.getValue().dump());
 
+        while(dumper.hasFunction()){
+            Dumper.IndexedItem<ZendFunction> item = dumper.consumeOneFunc();
+            ps.println("#" + item.getIndex());
+            item.getItem().dump_self(dumper);
+
+            ps.println();
         }
     }
 
@@ -131,7 +195,6 @@ public class Routine{
     }
 
     class GlobalScope{
-        public List<ZendFunction> functions = new ArrayList<>();
         public Map<String,Zval> constTable = new HashMap<>();
 
     }

@@ -36,32 +36,43 @@ public class LoopTable {
         return ret;
     }
 
+    public boolean isEmpty(){
+        return break_list.isEmpty() && continuer_list.isEmpty();
+    }
+
     public void dump(PrintStream ps){
         ps.println("break:");
-        ps.println("index");
         int index = 0;
-        for(int[] l1 : break_list){
-            ps.print("#");
-            ps.print(index++);
-            for(int i : l1){
-                ps.print(" ");
-                ps.print(i);
+        if(break_list.isEmpty()){
+            ps.println("(no break statement)");
+        }
+        else {
+            for (int[] l1 : break_list) {
+                ps.print("#");
+                ps.print(index++);
+                for (int i : l1) {
+                    ps.print(" ");
+                    ps.print(i);
+                }
+                ps.println();
             }
-            ps.println();
         }
 
         ps.println("continue:");
-        ps.println("index");
-        index = 0;
-        for(int[] l1 : continuer_list){
-            ps.print("#");
-            ps.print(index++);
-            for(int i : l1){
-                ps.print(" ");
-                ps.print(i);
-            }
-            ps.println();
+        if(continuer_list.isEmpty()){
+            ps.println("(no continue statement)");
         }
-
+        else {
+            index = 0;
+            for (int[] l1 : continuer_list) {
+                ps.print("#");
+                ps.print(index++);
+                for (int i : l1) {
+                    ps.print(" ");
+                    ps.print(i);
+                }
+                ps.println();
+            }
+        }
     }
 }

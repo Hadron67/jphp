@@ -91,4 +91,10 @@ public class Zstring extends Zval {
 
         return super.equals(obj);
     }
+
+    @Override
+    public Zstring clone() {
+        super.clone();
+        return new Zstring(value);
+    }
 }

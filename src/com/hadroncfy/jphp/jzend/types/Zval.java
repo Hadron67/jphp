@@ -11,6 +11,14 @@ public abstract class Zval {
         return typename.equals(getTypeName());
     }
 
+    public Zval fullyDeRef(){
+        Zval ret = this;
+        while(ret instanceof Zref){
+            ret = ((Zref) ret).deRef();
+        }
+        return ret;
+    }
+
     public Zval plus(Zval zval){
         return null;
     }
@@ -41,7 +49,7 @@ public abstract class Zval {
     public Zref subscript(Zval zval){
         return null;
     }
-    public  Zval bitAnd(Zval zval){
+    public Zval bitAnd(Zval zval){
         return null;
     }
     public Zval bitOr(Zval zval){
@@ -70,5 +78,12 @@ public abstract class Zval {
     }
     public Zarray arrayCast(){
         return null;
+    }
+    public Zval clone(){
+        try {
+            return (Zval)super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
     }
 }
