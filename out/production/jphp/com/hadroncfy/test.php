@@ -1,8 +1,5 @@
 <?php
-class A{
-    use B{
-        B as sdfsdf;
-        A::b insteadof G,N;
-    }
+for($i = 0;$i < 10;$i++){
+
 }
 ?>

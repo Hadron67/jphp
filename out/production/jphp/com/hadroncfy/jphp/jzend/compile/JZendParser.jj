@@ -330,7 +330,7 @@ TOKEN: {
     | <ENDDECLARE: "enddeclare">
     //constants
     | <CLASS_C: "__CLASS__">
-    | <TRAIT_C: "__TRAIT">
+    | <TRAIT_C: "__TRAIT__">
     | <FUNCTION_C: "__FUNCTION__">
     | <METHOD_C: "__METHOD__">
     | <LINE_C: "__LINE__">
@@ -748,7 +748,7 @@ void BinaryExpr()throws CompilationException :{
         | t = <TIMES>
         | t = <DIVIDE>
         | t = <MOD> ) {
-            ts = new Stack<Token>();
+            if(ts == null) ts = new Stack<Token>();
             int p1 = getBinaryOptrPriority(t.kind);
             if(ts.empty()){
                 ts.push(t);
@@ -996,12 +996,12 @@ void Constant()throws CompilationException:{
 }{
     t = <NOMBRE> { cp.DoNombre(Double.parseDouble(t.image),false); }
     | t = <INTEGER> { cp.DoNombre(Integer.parseInt(t.image),true); }
-    | <CLASS_C>
-    | <TRAIT_C>
-    | <FUNCTION_C>
-    | <METHOD_C>
-    | <LINE_C>
-    | <FILE_C>
+    | <CLASS_C> { cp.DoString(cp.getClassName()); }
+    | <TRAIT_C> { cp.DoString(cp.getClassName()); }
+    | <FUNCTION_C> { cp.DoString(cp.getFunctionName()); }
+    | <METHOD_C> { cp.DoString(cp.getMethodName()); }
+    | <LINE_C> { cp.DoNombre(cp.getLine(),true); }
+    | <FILE_C> { cp.DoString(cp.getFileName()); }
     | <DIR_C>
     | <NAMESPACE_C> { cp.DoString(cp.getCurrentNameSpace()); }
 }
@@ -1179,12 +1179,12 @@ void StaticConstant()throws CompilationException:{
     | t = <INTEGER> { cp.doStaticConstInt(Integer.parseInt(t.image)); }
     | t = <PSTRING> { cp.doStaticConstString(t.image); }
     | <BEGIN_OF_SSTRING> t = <OTHERS_IN_STRING> <END_OF_STRING> { cp.doStaticConstString(t.image); }
-    | <CLASS_C>
-    | <TRAIT_C>
-    | <FUNCTION_C>
-    | <METHOD_C>
-    | <LINE_C>
-    | <FILE_C>
+    | <CLASS_C> { cp.doStaticConstString(cp.getClassName()); }
+    | <TRAIT_C> { cp.doStaticConstString(cp.getClassName()); }
+    | <FUNCTION_C> { cp.doStaticConstString(cp.getFunctionName()); }
+    | <METHOD_C> { cp.doStaticConstString(cp.getMethodName()); }
+    | <LINE_C> { cp.doStaticConstInt(cp.getLine()); }
+    | <FILE_C> { cp.doStaticConstString(cp.getFileName()); }
     | <DIR_C>
     | <NAMESPACE_C> { cp.doStaticConstString(cp.getCurrentNameSpace()); }
 }

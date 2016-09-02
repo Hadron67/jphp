@@ -1,6 +1,8 @@
 package com.hadroncfy.jphp.jzend.compile;
 import com.hadroncfy.jphp.jzend.compile.ins.*;
 import com.hadroncfy.jphp.jzend.types.*;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Prefixable;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -31,17 +33,22 @@ public class JZendCompiler implements WarningReporter {
     private Stack<ForContext> for_loop_stack = new Stack<>();
     private Stack<ForEachContext> foreach_context_stack = new Stack<>();
     private Stack<IntIns> conditional_expr_stack = new Stack<>();
-    //private Stack<ZendFunction> func_stack = new Stack<>();
     private Stack<ZendClass> class_stack = new Stack<>();
     private Stack<Zval> const_eval_stack = new Stack<>();
     private MemberBuilder mbuilder = new MemberBuilder(this);
     private RegMgr regmgr = new RegMgr();
 
+    private Stack<String> function_name_stack = new Stack<>();
+
 
     private FunctionHead currentHead;
 
 
-    private int getLine(){ return current_routine.getLine(); }
+    protected int getLine(){ return current_routine.getLine(); }
+
+    protected String getFileName(){
+        return fname;
+    }
 
     protected Instruction addIns(Instruction ins){
         ins.line = lineGetter.getLine();
@@ -100,6 +107,20 @@ public class JZendCompiler implements WarningReporter {
     public Routine compile(InputStream stream) throws ParseException, CompilationException {
         return compile(stream, "-");
     }
+
+    protected String getFunctionName(){
+        return function_name_stack.isEmpty() ? "" : function_name_stack.peek();
+    }
+
+    protected String getMethodName(){
+        return getClassName() + (function_name_stack.isEmpty() ? "" : "::" + function_name_stack.peek());
+    }
+
+    protected String getClassName(){
+        return class_stack.isEmpty() ? "" : class_stack.peek().getName();
+    }
+
+
 
     protected void DoBinaryOptr(int token_type) {
         int op = 0;
@@ -280,7 +301,6 @@ public class JZendCompiler implements WarningReporter {
         }
     }
 
-
     protected void doStaticConstInt(int value){
         const_eval_stack.push(new Zint(value));
     }
@@ -294,19 +314,25 @@ public class JZendCompiler implements WarningReporter {
     }
 
     protected void doStaticConstPosOptr() throws CompilationException{
-        Zval result = const_eval_stack.pop().pos();
-        if(result == null){
+        Zval result = const_eval_stack.pop();
+        if(result instanceof Prefixable){
+            result = ((Prefixable) result).pos();
+            const_eval_stack.push(result);
+        }
+        else {
             throw generateException("'+' is not supported");
         }
-        const_eval_stack.push(result);
     }
 
     protected void doStaticConstNegOptr() throws CompilationException{
-        Zval result = const_eval_stack.pop().neg();
-        if(result == null){
+        Zval result = const_eval_stack.pop();
+        if(result instanceof Prefixable){
+            result = ((Prefixable) result).neg();
+            const_eval_stack.push(result);
+        }
+        else {
             throw generateException("'+' is not supported");
         }
-        const_eval_stack.push(result);
     }
 
     protected void doStaticConstArray(){
@@ -325,7 +351,7 @@ public class JZendCompiler implements WarningReporter {
         Zval key = const_eval_stack.pop();
         Zarray array = (Zarray) const_eval_stack.pop();
         if(!Zarray.checkKeyType(key)){
-            addWarning("illegal offset type \"" + key.getTypeName() + "\",this element will be ignored");
+            addWarning("illegal offset type ,this element will be ignored");
         }
         array.addItem(key,value);
         const_eval_stack.push(array);
@@ -445,6 +471,7 @@ public class JZendCompiler implements WarningReporter {
     protected void doPrepareMethod(String name,boolean isRef){
         currentHead = new MethodHead(name,isRef,class_stack.peek());
 
+        function_name_stack.push(name);
 
     }
 
@@ -973,6 +1000,7 @@ public class JZendCompiler implements WarningReporter {
         if((f = current_routine.getFunction(fname)) != null){
             throw generateException("Cannot redeclare " + fname + "() (previously declared in " + f.getHead().filename +":" + f.getStartLine() + ")");
         }
+        function_name_stack.push(fname);
         currentHead = new FunctionHead(fname,is_ref);
         currentHead.filename = this.fname;
     }
@@ -1010,7 +1038,7 @@ public class JZendCompiler implements WarningReporter {
     }
 
     protected void doEndFunction() {
-
+        function_name_stack.pop();
         if(!current_routine.hasReturn){
             addIns(new Instruction(Opcode.NULL));
             addIns(new Instruction(Opcode.RETURN));

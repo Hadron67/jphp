@@ -525,7 +525,7 @@ public interface JZendParserConstants {
     "\"declare\"",
     "\"enddeclare\"",
     "\"__CLASS__\"",
-    "\"__TRAIT\"",
+    "\"__TRAIT__\"",
     "\"__FUNCTION__\"",
     "\"__METHOD__\"",
     "\"__LINE__\"",

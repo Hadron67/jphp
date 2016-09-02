@@ -1,12 +1,13 @@
 package com.hadroncfy.jphp.jzend.types;
 
 
-import java.lang.ref.ReferenceQueue;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 /**
  * Created by cfy on 16-8-12.
+ *
  */
-public abstract class Zref extends Zval{
-    public abstract Zval assign(Zval src);
-    public abstract Zval deRef();
+public interface Zref extends Zval {
+    Zval assign(Zval src);
+    Zval deRef();
 }

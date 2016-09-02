@@ -1,6 +1,7 @@
 package com.hadroncfy.jphp;
 
 
+import com.hadroncfy.jphp.jzend.Context;
 import com.hadroncfy.jphp.jzend.compile.CompilationException;
 import com.hadroncfy.jphp.jzend.compile.JZendCompiler;
 import com.hadroncfy.jphp.jzend.compile.ParseException;
@@ -27,6 +28,13 @@ public class Main {
             }
             System.out.println("program accepted.");
             result.dump(System.out);
+            System.out.println("result:");
+
+            Context env = new Context(System.out);
+            result.call(env,null);
+            if(env.isError()){
+                System.out.print(env.getErrorMsg());
+            }
         } catch (CompilationException e) {
             System.out.print("PHP Fatal Error:" + e.getMessage());
         } catch (FileNotFoundException | ParseException e) {

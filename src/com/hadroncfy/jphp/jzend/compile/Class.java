@@ -1,6 +1,6 @@
 package com.hadroncfy.jphp.jzend.compile;
 
-import com.hadroncfy.jphp.jzend.types.Zval;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -109,7 +109,10 @@ public class Class extends ZendClass {
     }
 
     @Override
-    protected void addVar(String name,ClassMember<Zval> var) throws IllegalClassOperationException {
+    protected void addVar(String name,ClassMember<Zval> var) throws IllegalClassOperationException, RedeclareException {
+        if(vars.get(name) != null){
+            throw new RedeclareException("Cannot redeclare " + cname + "::$" + name);
+        }
         vars.put(name,var);
     }
 

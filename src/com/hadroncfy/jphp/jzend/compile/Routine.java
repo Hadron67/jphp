@@ -1,8 +1,12 @@
 package com.hadroncfy.jphp.jzend.compile;
 
+import com.hadroncfy.jphp.jzend.JZendVM;
+import com.hadroncfy.jphp.jzend.Program;
+import com.hadroncfy.jphp.jzend.Context;
 import com.hadroncfy.jphp.jzend.compile.ins.Instruction;
 import com.hadroncfy.jphp.jzend.compile.ins.NewFuncIns;
-import com.hadroncfy.jphp.jzend.types.Zval;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Callable;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -11,7 +15,7 @@ import java.util.*;
 /**
  * Created by cfy on 16-8-8.
  */
-public class Routine{
+public class Routine implements Callable,Program{
 
     protected List<Instruction> opcodes = new ArrayList<>();
     protected List<ExceptionItem> exceptionTable = new ArrayList<>();
@@ -184,6 +188,32 @@ public class Routine{
 
             ps.println();
         }
+    }
+
+    @Override
+    public Zval call(Context env, Zval[] args) {
+        env.loadConsts(globalScope.constTable);
+        env.loadFunctions(functionTable);
+        env.enterScope();
+        JZendVM vm = new JZendVM(env,this);
+        vm.exec();
+        env.leaveScope();
+        return vm.getResult();
+    }
+
+    @Override
+    public Instruction getIns(int i) {
+        return opcodes.get(i);
+    }
+
+    @Override
+    public int getSize() {
+        return opcodes.size();
+    }
+
+    @Override
+    public Map<String, Zval> getConsts() {
+        return globalScope.constTable;
     }
 
     class ExceptionItem{

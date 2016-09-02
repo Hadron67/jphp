@@ -1,6 +1,6 @@
 package com.hadroncfy.jphp.jzend.compile;
 
-import com.hadroncfy.jphp.jzend.types.Zval;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 /**
  * Created by cfy on 16-8-26.
