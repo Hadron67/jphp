@@ -10,13 +10,17 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
  */
 
 @ExplicitTypeInstruction
-public class ConditionalGotoIns implements Instruction {
+public class ConditionalGotoIns implements SingleJumpIns {
     public boolean inverted = false;
     public int line;
 
     public ConditionalGotoIns(int i,boolean inverted){
         line = i;
         this.inverted = inverted;
+    }
+
+    public ConditionalGotoIns(boolean i){
+        inverted = i;
     }
 
     @Override
@@ -41,5 +45,15 @@ public class ConditionalGotoIns implements Instruction {
     @Override
     public String toString() {
         return (inverted ? "CONDITIONAL_NOT_GOTO " : "CONDITIONAL_GOTO ") + line;
+    }
+
+    @Override
+    public void setLine(int i) {
+        line = i;
+    }
+
+    @Override
+    public int getLine() {
+        return line;
     }
 }

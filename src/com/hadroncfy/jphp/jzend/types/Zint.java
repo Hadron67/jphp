@@ -28,6 +28,11 @@ public class Zint implements Zval,Number,Concatable {
     }
 
     @Override
+    public Zval clone() {
+        return new Zint(value);
+    }
+
+    @Override
     public boolean doTypeCheck(String typename) {
         return typename.equals("int") || typename.equals("integer");
     }
@@ -111,43 +116,6 @@ public class Zint implements Zval,Number,Concatable {
         return null;
     }
 
-    @Override
-    public Zval lessThan(Zval zval) {
-        if(zval instanceof Zint){
-            return Zbool.asZbool(value < ((Zint) zval).value);
-        }
-        else if(zval instanceof Zfloat){
-            return Zbool.asZbool(value < ((Zfloat) zval).value);
-        }
-        else if(zval instanceof Castable){
-            return Zbool.asZbool(value < ((Castable) zval).floatCast().value);
-        }
-        return null;
-    }
-
-    @Override
-    public Zval moreThan(Zval zval) {
-        if(zval instanceof Zint){
-            return Zbool.asZbool(value > ((Zint) zval).value);
-        }
-        else if(zval instanceof Zfloat){
-            return Zbool.asZbool(value > ((Zfloat) zval).value);
-        }
-        else if(zval instanceof Castable){
-            return Zbool.asZbool(value > ((Castable) zval).floatCast().value);
-        }
-        return null;
-    }
-
-    @Override
-    public Zval equal(Zval zval) {
-        return null;
-    }
-
-    @Override
-    public Zval identical(Zval zval) {
-        return Zbool.asZbool((zval instanceof Zint) && equals(zval));
-    }
 
     @Override
     public Zval bitAnd(Zval zval) {
@@ -194,6 +162,38 @@ public class Zint implements Zval,Number,Concatable {
     @Override
     public Zval bitNot() {
         return new Zint(~value);
+    }
+
+    @Override
+    public Zval leftShift(Zval zval) {
+        int i = 0;
+        if(zval instanceof Zint){
+            i = ((Zint) zval).value;
+        }
+        else if(zval instanceof Zfloat){
+            i =(int) ((Zfloat) zval).value;
+        }
+        else if(zval instanceof Castable){
+            i = ((Castable) zval).intCast().value;
+        }
+
+        return new Zint(value << i);
+    }
+
+    @Override
+    public Zval rightShift(Zval zval) {
+        int i = 0;
+        if(zval instanceof Zint){
+            i = ((Zint) zval).value;
+        }
+        else if(zval instanceof Zfloat){
+            i =(int) ((Zfloat) zval).value;
+        }
+        else if(zval instanceof Castable){
+            i = ((Castable) zval).intCast().value;
+        }
+
+        return new Zint(value >> i);
     }
 
     @Override
@@ -258,4 +258,29 @@ public class Zint implements Zval,Number,Concatable {
         }
         return super.equals(obj);
     }
+
+    private static int balance(double i,double j){
+        return i != j ? i < j ? -1 : 1 : 0;
+    }
+
+    @Override
+    public int compareTo(Zval zval) {
+
+        if(zval instanceof Zfloat){
+            return balance(value,((Zfloat) zval).value);
+        }
+        else if(zval instanceof Zint){
+            return balance(value,((Zint) zval).value);
+        }
+        else if(zval instanceof Castable){
+            return balance(value,((Castable) zval).floatCast().value);
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean identical(Zval val) {
+        return val instanceof Zint && value == ((Zint) val).value;
+    }
+
 }

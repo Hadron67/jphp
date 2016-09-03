@@ -9,9 +9,9 @@ import com.hadroncfy.jphp.jzend.types.Zint;
  */
 public class NumberIns implements Instruction {
 
-    private double n;
+    public double n;
 
-    public NumberIns(int i){
+    public NumberIns(double i){
         n = i;
     }
 

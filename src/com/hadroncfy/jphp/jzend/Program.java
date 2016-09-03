@@ -1,6 +1,6 @@
 package com.hadroncfy.jphp.jzend;
 
-import com.hadroncfy.jphp.jzend.compile.ins.Instruction;
+import com.hadroncfy.jphp.jzend.ins.Instruction;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
 import java.util.Map;

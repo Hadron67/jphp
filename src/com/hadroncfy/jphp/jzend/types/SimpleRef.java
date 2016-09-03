@@ -29,6 +29,16 @@ public class SimpleRef implements Zref {
     }
 
     @Override
+    public String getTypeName() {
+        return zval.getTypeName();
+    }
+
+    @Override
+    public Zval clone() {
+        return zval.clone();
+    }
+
+    @Override
     public boolean doTypeCheck(String typename) {
         return zval.doTypeCheck(typename);
     }

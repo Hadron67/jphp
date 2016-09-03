@@ -20,6 +20,12 @@ public class Operator {
     public static final int BINARY_BIT_XOR = 13;
     public static final int BINARY_ASSIGN = 14;
     public static final int BINARY_INSTANCEOF = 15;
+    public static final int BINARY_NOT_EQUAL = 16;
+    public static final int BINARY_NOT_IDENTICAL = 17;
+    public static final int BINARY_MORE_THAN_OR_EQUAL = 18;
+    public static final int BINARY_LESS_THAN_OR_EQUAL = 19;
+    public static final int BINARY_LEFT_SHIFT = 20;
+    public static final int BINARY_RIGHT_SHIFT = 21;
 
     public static final int UNARY_NOT = 0;
     public static final int UNARY_BIT_NOT = 1;
@@ -35,9 +41,10 @@ public class Operator {
     public static final int UNARY_PRE_INC = 11;
     public static final int UNARY_PRE_DEC = 12;
     public static final int UNARY_OBJECT_CAST = 13;
+    public static final int UNARY_UNSET_CAST = 14;
 
-    private static final String[] binaryS = {"+","-","*","/","%","<",">","==","===","&&","||","&","|","^","=","instanceof"};
-    private static final String[] unaryS = {"!","~","+","-","(int)","(float)","(string)","(bool)","(array)","()++","++()","()--","--()","(object)"};
+    private static final String[] binaryS = {"+","-","*","/","%","<",">","==","===","&&","||","&","|","^","=","instanceof","!=","!==",">=","<=","<<",">>"};
+    private static final String[] unaryS = {"!","~","+","-","(int)","(float)","(string)","(bool)","(array)","()++","++()","()--","--()","(object)","(unset)"};
 
     public static String toBinaryOptrString(int i){
         return binaryS[i];

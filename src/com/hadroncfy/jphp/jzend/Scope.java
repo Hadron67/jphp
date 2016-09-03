@@ -22,8 +22,6 @@ public class Scope {
 
     protected Map<String,? extends Function> func = null;
 
-    private Set<String> globals = new HashSet<>();
-
     private Scope(){}
 
     public static Scope global(){
@@ -52,12 +50,7 @@ public class Scope {
     }
 
     public Zref getVar(String name){
-        if(globals.contains(name)){
-            return global.variables.get(name);
-        }
-        else{
-            return variables.get(name);
-        }
+        return variables.get(name);
     }
 
     public void addVar(String name,Zval val){
@@ -65,9 +58,14 @@ public class Scope {
     }
 
     public void declareGlobal(String name){
-        if(global.variables.get(name) == null)
-            global.variables.put(name,new SimpleRef(Znull.NULL));
-        globals.add(name);
+        if(variables.get(name) != null){
+            Zref ref;
+            if((ref = global.variables.get(name)) == null){
+                ref = new SimpleRef(Znull.NULL);
+                global.variables.put(name,ref);
+            }
+            variables.put(name,ref);
+        }
     }
 
     public Scope getParent(){

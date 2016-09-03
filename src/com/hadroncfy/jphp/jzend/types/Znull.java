@@ -30,6 +30,11 @@ public class Znull implements Zval,Castable,Concatable {
     }
 
     @Override
+    public Zval clone() {
+        return this;
+    }
+
+    @Override
     public Zbool boolCast() {
         return Zbool.FALSE;
     }

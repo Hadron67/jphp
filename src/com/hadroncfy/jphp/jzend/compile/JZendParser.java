@@ -3635,7 +3635,7 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE:
       t = jj_consume_token(VARIABLE);
-                     cp.DoString(t.image);cp.doFindClassVar(false);
+                     cp.doFindClassVar(t.image,false);
       break;
     case IDENTIFIER:
       t = jj_consume_token(IDENTIFIER);
@@ -3792,7 +3792,7 @@ void MultiplicativeExpr():
         String property = t.image.substring(a + 2,b);
         cp.DoFindVariable(vname,false);
         cp.DoString(property);
-        cp.DoRequestMember(false);
+        cp.doRequestMember(property,false);
         cp.DoToString();
       break;
     default:
@@ -4305,21 +4305,21 @@ void MultiplicativeExpr():
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE:
       t = jj_consume_token(VARIABLE);
-                     cp.DoFindVariable(t.image,false);cp.DoToString();cp.DoRequestMember(false);
+                     cp.DoFindVariable(t.image,false);cp.DoToString();cp.doRequestMemberByName(false);
       break;
     case DOLLAR:
       jj_consume_token(DOLLAR);
       jj_consume_token(LBBRACKET);
       Expr();
       jj_consume_token(RBBRACKET);
-                                                cp.DoFindVariableByName(false);cp.DoToString();cp.DoRequestMember(false);
+                                                cp.DoFindVariableByName(false);cp.DoToString();cp.doRequestMemberByName(false);
       break;
     case MEMBERNAME:
       t = jj_consume_token(MEMBERNAME);
       if (jj_2_14(2147483647)) {
-                                  cp.DoString(t.image);cp.DoRequestMember(true);
+                                  cp.doRequestMember(t.image,true);
       } else {
-            cp.DoString(t.image);cp.DoRequestMember(false);
+            cp.doRequestMember(t.image,true);
       }
       break;
     default:
@@ -4358,29 +4358,29 @@ void MultiplicativeExpr():
     case INCLUDE:
       jj_consume_token(INCLUDE);
       Expr();
-                         cp.doIncludeOrEval(0);
+                         cp.doInclude(false,false);
       break;
     case INCLUDE_ONCE:
       jj_consume_token(INCLUDE_ONCE);
       Expr();
-                              cp.doIncludeOrEval(1);
+                              cp.doInclude(true,false);
       break;
     case REQUIRE:
       jj_consume_token(REQUIRE);
       Expr();
-                         cp.doIncludeOrEval(2);
+                         cp.doInclude(false,true);
       break;
     case REQUIRE_ONCE:
       jj_consume_token(REQUIRE_ONCE);
       Expr();
-                              cp.doIncludeOrEval(3);
+                              cp.doInclude(true,true);
       break;
     case EVAL:
       jj_consume_token(EVAL);
       jj_consume_token(LBRACKET);
       Expr();
       jj_consume_token(RBRACKET);
-                                            cp.doIncludeOrEval(4);
+                                            cp.doEval();
       break;
     case ISSET:
       jj_consume_token(ISSET);

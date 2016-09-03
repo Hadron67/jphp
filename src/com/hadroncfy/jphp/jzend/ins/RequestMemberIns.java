@@ -8,7 +8,7 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
  */
 
 @ExplicitTypeInstruction
-public class RequestMemberIns implements Instruction {
+public class RequestMemberIns implements ReferencableIns {
 
     public String memberName;
     public boolean isRef;
@@ -29,5 +29,15 @@ public class RequestMemberIns implements Instruction {
     @Override
     public String toString() {
         return "REQUEST_MEMBER" + (isFunc ? "_FUNC " : " ") + (isRef ? "&" : "") + memberName;
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

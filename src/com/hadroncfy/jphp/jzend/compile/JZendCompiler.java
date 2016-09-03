@@ -1,6 +1,10 @@
 package com.hadroncfy.jphp.jzend.compile;
 import com.hadroncfy.jphp.jzend.compile.ins.*;
+import com.hadroncfy.jphp.jzend.ins.*;
+import com.hadroncfy.jphp.jzend.ins.Instruction;
+import com.hadroncfy.jphp.jzend.ins.StringIns;
 import com.hadroncfy.jphp.jzend.types.*;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.ArrayIterator;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Prefixable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
@@ -28,11 +32,11 @@ public class JZendCompiler implements WarningReporter {
     private List<Warning> warnings = new LinkedList<>();
     private Stack<IfContext> ifstmt_stack = new Stack<>();
     private Stack<SwitchContext> switchstmt_stack = new Stack<>();
-    private Stack<IntIns> while_loop_escape_stack = new Stack<>();
+    private Stack<ConditionalGotoIns> while_loop_escape_stack = new Stack<>();
     private Stack<Integer> do_while_loop_entry_stack = new Stack<>();
     private Stack<ForContext> for_loop_stack = new Stack<>();
     private Stack<ForEachContext> foreach_context_stack = new Stack<>();
-    private Stack<IntIns> conditional_expr_stack = new Stack<>();
+    private Stack<ConditionalExprContext> conditional_expr_stack = new Stack<>();
     private Stack<ZendClass> class_stack = new Stack<>();
     private Stack<Zval> const_eval_stack = new Stack<>();
     private MemberBuilder mbuilder = new MemberBuilder(this);
@@ -51,7 +55,7 @@ public class JZendCompiler implements WarningReporter {
     }
 
     protected Instruction addIns(Instruction ins){
-        ins.line = lineGetter.getLine();
+        //ins.line = lineGetter.getLine();
         current_routine.addIns(ins);
         return ins;
     }
@@ -108,6 +112,18 @@ public class JZendCompiler implements WarningReporter {
         return compile(stream, "-");
     }
 
+    protected Instruction getIns(int i){
+        return current_routine.getIns(i);
+    }
+
+    protected void setIns(int i,Instruction ins){
+        current_routine.setIns(i,ins);
+    }
+
+    protected void setLastIns(Instruction ins){
+        current_routine.setIns(getLine() - 1,ins);
+    }
+
     protected String getFunctionName(){
         return function_name_stack.isEmpty() ? "" : function_name_stack.peek();
     }
@@ -124,180 +140,187 @@ public class JZendCompiler implements WarningReporter {
 
     protected void DoBinaryOptr(int token_type) {
         int op = 0;
+        Instruction ins;
         switch (token_type){
-            case JZendParserConstants.AND: { op = Opcode.AND;break; }
-            case JZendParserConstants.OR: op = Opcode.OR;break;
-            case JZendParserConstants.XOR: op = Opcode.XOR;break;
-            case JZendParserConstants.BITAND: op = Opcode.BITAND;break;
-            case JZendParserConstants.BITOR: op = Opcode.BITOR;break;
-            case JZendParserConstants.BITXOR: op = Opcode.BITXOR;break;
-            case JZendParserConstants.EQU: op = Opcode.EQU; break;
-            case JZendParserConstants.NEQU: op = Opcode.NEQU; break;
-            case JZendParserConstants.IDENTICAL: op = Opcode.IDENTICAL; break;
-            case JZendParserConstants.NIDENTICAL: op = Opcode.NIDENTICAL; break;
-            case JZendParserConstants.MT: op = Opcode.MT;break;
-            case JZendParserConstants.MTOE: op = Opcode.MTOE;break;
-            case JZendParserConstants.LT: op = Opcode.LT;break;
-            case JZendParserConstants.LTOE: op = Opcode.LTOE;break;
-            case JZendParserConstants.LSHIFT: op = Opcode.LSHIFT;break;
-            case JZendParserConstants.RSHIFT: op = Opcode.RSHIFT;break;
-            case JZendParserConstants.PLUS: op = Opcode.PLUS;break;
-            case JZendParserConstants.MINUS: op = Opcode.MINUS;break;
+            case JZendParserConstants.AND: { ins = new BinaryOperatorIns(Operator.BINARY_AND);break; }
+            case JZendParserConstants.OR: { ins = new BinaryOperatorIns(Operator.BINARY_OR);break; }
+            case JZendParserConstants.XOR: { ins = new BinaryOperatorIns(Operator.BINARY_BIT_XOR);break; }
+            case JZendParserConstants.BITAND: { ins = new BinaryOperatorIns(Operator.BINARY_BIT_AND);break; }
+            case JZendParserConstants.BITOR: { ins = new BinaryOperatorIns(Operator.BINARY_BIT_OR);break; }
+            case JZendParserConstants.BITXOR: { ins = new BinaryOperatorIns(Operator.BINARY_BIT_XOR);break; }
+            case JZendParserConstants.EQU: { ins = new BinaryOperatorIns(Operator.BINARY_EQUAL);break; }
+            case JZendParserConstants.NEQU: { ins = new BinaryOperatorIns(Operator.BINARY_NOT_EQUAL);break; }
+            case JZendParserConstants.IDENTICAL: { ins = new BinaryOperatorIns(Operator.BINARY_IDENTICAL);break; }
+            case JZendParserConstants.NIDENTICAL: { ins = new BinaryOperatorIns(Operator.BINARY_NOT_IDENTICAL);break; }
+            case JZendParserConstants.MT: { ins = new BinaryOperatorIns(Operator.BINARY_MORE_THAN);break; }
+            case JZendParserConstants.MTOE: { ins = new BinaryOperatorIns(Operator.BINARY_MORE_THAN_OR_EQUAL);break; }
+            case JZendParserConstants.LT: { ins = new BinaryOperatorIns(Operator.BINARY_LESS_THAN);break; }
+            case JZendParserConstants.LTOE: { ins = new BinaryOperatorIns(Operator.BINARY_LESS_THAN_OR_EQUAL);break; }
+            case JZendParserConstants.LSHIFT: { ins = new BinaryOperatorIns(Operator.BINARY_LEFT_SHIFT);break; }
+            case JZendParserConstants.RSHIFT: { ins = new BinaryOperatorIns(Operator.BINARY_RIGHT_SHIFT);break; }
+            case JZendParserConstants.PLUS: { ins = new BinaryOperatorIns(Operator.BINARY_PLUS);break; }
+            case JZendParserConstants.MINUS: { ins = new BinaryOperatorIns(Operator.BINARY_MINUS);break; }
             case JZendParserConstants.CONCAT: {
-                addIns(new IntIns(Opcode.CONCAT,2));
+                addIns(new ConcatIns(2));
                 return;
             }
-            case JZendParserConstants.TIMES: op = Opcode.TIMES;break;
-            case JZendParserConstants.DIVIDE: op = Opcode.DIVIDE;break;
-            case JZendParserConstants.MOD:op = Opcode.MOD;break;
+            case JZendParserConstants.TIMES: { ins = new BinaryOperatorIns(Operator.BINARY_TIMES);break; }
+            case JZendParserConstants.DIVIDE: { ins = new BinaryOperatorIns(Operator.BINARY_DIVIDE);break; }
+            case JZendParserConstants.MOD: { ins = new BinaryOperatorIns(Operator.BINARY_MORE_THAN);break; }
             default:throw new AssertionError("Unknown binary operator:" + token_type);
         }
-        addIns(new Instruction((op)));
+        addIns(ins);
     }
 
     protected void DoUnaryOptr(int token_type) {
         int op = 0;
+        Instruction ins;
         switch (token_type){
-            case JZendParserConstants.INC:op = Opcode.PRE_INC;break;
-            case JZendParserConstants.DEC:op = Opcode.PRE_DEC;break;
-            case JZendParserConstants.BITNOT:op = Opcode.BITNOT;break;
-            case JZendParserConstants.NOT:op = Opcode.NOT;break;
-            case JZendParserConstants.CLONE:op = Opcode.CLONE;break;
-            case JZendParserConstants.MINUS:op = Opcode.NEGTIVE;break;
-            case JZendParserConstants.PLUS:break;
+            case JZendParserConstants.INC:ins = new UnaryIns(Operator.UNARY_PRE_INC);break;
+            case JZendParserConstants.DEC:ins = new UnaryIns(Operator.UNARY_PRE_DEC);break;
+            case JZendParserConstants.BITNOT:ins = new UnaryIns(Operator.UNARY_BIT_NOT);break;
+            case JZendParserConstants.NOT:ins = new UnaryIns(Operator.UNARY_NOT);break;
+            case JZendParserConstants.CLONE:ins = new CloneIns();break;
+            case JZendParserConstants.MINUS:ins = new UnaryIns(Operator.UNARY_NEG);break;
+            case JZendParserConstants.PLUS:ins = new UnaryIns(Operator.UNARY_POS);break;
             default: throw new AssertionError("Unknown unary operator:" + token_type);
         }
-        addIns(new Instruction(op));
+        addIns(ins);
     }
 
     protected void DoPostIncOrDec(boolean is_dec) {
-        addIns(new Instruction(is_dec ? Opcode.POST_DEC : Opcode.POST_INC));
+        addIns(new UnaryIns(is_dec ? Operator.UNARY_POST_DEC : Operator.UNARY_POST_INC));
     }
 
     protected void DoDup() {
-        addIns(new Instruction(Opcode.DUP));
+        addIns(new DupIns());
     }
 
 
-    protected void DoNull() { addIns(new Instruction(Opcode.NULL)); }
+    protected void DoNull() { addIns(new NullIns()); }
 
 
-    protected void DoNewArray() { addIns(new Instruction(Opcode.NEW_ARRAY)); }
+    protected void DoNewArray() { addIns(new NewArrayIns()); }
 
 
     protected void DoAddArrayItem(boolean is_map) {
         if (!is_map)
-            addIns(new Instruction(Opcode.ADD_ARRAY_ITEM));
+            addIns(new AddArrayItemIns());
         else
-            addIns(new Instruction(Opcode.ADD_ARRAY_MAP_ITEM));
+            addIns(new AddArrayMapItemIns());
     }
 
 
-    protected void DoDereference() { addIns(new Instruction(Opcode.DEREFERENCE)); }
+    protected void DoDereference() { addIns(new DereferenceIns()); }
 
 
-    protected void DoPop() { addIns(new Instruction(Opcode.POP)); }
+    protected void DoPop() { addIns(new PopIns()); }
 
 
     protected void DoNombre(double n,boolean is_int) {
         if(is_int)
-            addIns(new IntIns(Opcode.INTEGER,(int)n));
+            addIns(new IntegerIns((int) n));
         else
-            addIns(new DoubleIns(Opcode.NUMBER,n));
+            addIns(new NumberIns(n));
     }
 
 
-    protected void DoString(String s) { addIns(new StringIns(Opcode.STRING,s)); }
+    protected void DoString(String s) { addIns(new StringIns(s)); }
 
 
     protected void DoToString() {
-        if (getLastIns().opcode != Opcode.STRING)
-            addIns(new Instruction(Opcode.TOSTRING));
+        Instruction ins = getLastIns();
+        if (!(ins instanceof StringIns || ins instanceof ToStringIns))
+            addIns(new ToStringIns());
     }
 
     protected void doCast(int what){
         switch(what){
             case 0:
-                addIns(new Instruction(Opcode.INT_CAST));
+                addIns(new UnaryIns(Operator.UNARY_INT_CAST));
                 break;
             case 1:
-                addIns(new Instruction(Opcode.FLOAT_CAST));
+                addIns(new UnaryIns(Operator.UNARY_FLOAT_CAST));
                 break;
             case 2:
-                addIns(new Instruction(Opcode.STRING_CAST));
+                addIns(new UnaryIns(Operator.UNARY_STRING_CAST));
                 break;
             case 3:
-                addIns(new Instruction(Opcode.ARRAY_CAST));
+                addIns(new UnaryIns(Operator.UNARY_ARRAY_CAST));
                 break;
             case 4:
-                addIns(new Instruction(Opcode.OBJECT_CAST));
+                addIns(new UnaryIns(Operator.UNARY_OBJECT_CAST));
                 break;
             case 5:
-                addIns(new Instruction(Opcode.BOOL_CAST));
+                addIns(new UnaryIns(Operator.UNARY_BOOL_CAST));
                 break;
             case 6:
-                addIns(new Instruction(Opcode.UNSET_CAST));
+                addIns(new UnaryIns(Operator.UNARY_UNSET_CAST));
                 break;
             default:throw new AssertionError("unknown cast type:" + what);
         }
     }
 
     protected void doBeginSilent(){
-        addIns(new Instruction(Opcode.BEGIN_SILENT));
+        addIns(new SilenceIns(true));
     }
 
     protected void doEndSilent(){
-        addIns(new Instruction(Opcode.END_SILENT));
+        addIns(new SilenceIns(true));
     }
 
-    protected void doIncludeOrEval(int type){
-        addIns(new IntIns(Opcode.INCLUDE_OR_EVAL,type));
+    protected void doInclude(boolean once,boolean req){
+        addIns(new IncludeIns(once,req));
+    }
+
+    protected void doEval(){
+        addIns(new EvalIns());
     }
 
     protected void doIsSet() throws CompilationException{
         convertRvalueToLvalue();
-        addIns(new Instruction(Opcode.IS_SET));
+        addIns(new IsSetIns());
     }
 
     protected void doAdditionalIsSet() throws CompilationException{
         convertRvalueToLvalue();
-        addIns(new Instruction(Opcode.IS_SET));
-        addIns(new Instruction(Opcode.AND));
+        addIns(new IsSetIns());
+        addIns(new BinaryOperatorIns(Operator.BINARY_AND));
     }
 
     protected void doIsEmpty() throws CompilationException{
         convertRvalueToLvalue();
-        addIns(new Instruction(Opcode.IS_EMPTY));
+        addIns(new EmptyIns());
     }
 
     protected void doFetchStatic(){
-        addIns(new Instruction(Opcode.FETCH_CLASS_STATIC));
+        addIns(new FetchClassIns(FetchClassIns.STATIC));
     }
 
-    protected void doFindClassVar(boolean isRef){
-        addIns(new IntIns(Opcode.FIND_CLASS_VAR,isRef ? 1 : 0));
+    protected void doFindClassVar(String vname,boolean isRef){
+        addIns(new FindClassVarIns(vname,isRef));
     }
 
     protected void doFindClassConst(String name){
-        addIns(new StringIns(Opcode.FIND_CLASS_CONST,name));
+        addIns(new FindClassConstIns(name));
     }
 
     protected void doFindClassFunction(String name){
-        addIns(new StringIns(Opcode.FIND_CLASS_FUNCTION,name));
+        addIns(new FindClassFunctionIns(name));
     }
 
     protected void doFetchClass(String name){
         if(name.equals("static")){
-            addIns(new Instruction(Opcode.FETCH_CLASS_STATIC));
+            addIns(new FetchClassIns(FetchClassIns.STATIC));
         }
         else if(name.equals("parent")){
-            addIns(new Instruction(Opcode.FETCH_CLASS_PARENT));
+            addIns(new FetchClassIns(FetchClassIns.PARENT));
         }
         else if(name.equals("self")){
-            addIns(new Instruction(Opcode.FETCH_CLASS_SELF));
+            addIns(new FetchClassIns(FetchClassIns.SELF));
         }
         else{
-            addIns(new StringIns(Opcode.FIND_CLASS,name));
+            addIns(new FindClassIns(name));
         }
     }
 
@@ -559,126 +582,99 @@ public class JZendCompiler implements WarningReporter {
         }
     }
 
-    protected void DoConcat(int count) { addIns(new IntIns(Opcode.CONCAT,count)); }
+    protected void DoConcat(int count) { addIns(new ConcatIns(count)); }
 
 
-    protected void DoRequestMember(boolean is_function) {
-        if (is_function)
-            addIns(new Instruction(Opcode.REQUEST_FUNCTION_MEMBER));
-        else addIns(new Instruction(Opcode.REQUEST_MEMBER));
+    protected void doRequestMember(String name,boolean is_function) {
+        addIns(new RequestMemberIns(name,false,is_function));
+    }
+
+    protected void doRequestMemberByName(boolean isFunc){
+        addIns(new RequestMemberByNameIns(false,isFunc));
     }
 
 
     protected void DoSubscript(boolean is_max) {
-        if (is_max)
-            addIns(new Instruction(Opcode.MAX_SUBSCRIPT));
-        else
-            addIns(new Instruction(Opcode.SUBSCRIPT));
+        addIns(new SubscriptIns(false,is_max));
     }
 
     protected void DoFindVariable(String vname,boolean is_ref) {
-        if (is_ref)
-            addIns(new StringIns(Opcode.FIND_VARIABLE_AS_REFERENCE,vname));
-        else
-            addIns(new StringIns(Opcode.FIND_VARIABLE,vname));
+        addIns(new FindVarIns(vname,is_ref));
     }
 
 
     protected void DoFindVariableByName(boolean is_ref) {
-        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
-            addIns(new Instruction(Opcode.TOSTRING));
-        if (is_ref)
-            addIns(new Instruction(Opcode.FIND_VARIABLE_BY_NAME_AS_REFERENCE));
-        else
-            addIns(new Instruction(Opcode.FIND_VARIABLE_BY_NAME));
+        Instruction ins = getLastIns();
+        if (!(ins instanceof StringIns || ins instanceof ToStringIns))
+            addIns(new ToStringIns());
+        addIns(new FindVarByNameIns(is_ref));
     }
 
 
     protected void CheckWritable() throws CompilationException {
-        int op = getLastIns().opcode;
-        if (op != Opcode.SUBSCRIPT &&
-                op != Opcode.FIND_VARIABLE &&
-                op != Opcode.REQUEST_MEMBER &&
-                op != Opcode.FIND_VARIABLE_AS_REFERENCE &&
-                op != Opcode.MAX_SUBSCRIPT &&
-                op != Opcode.FUNCTION_CALL &&
-                op != Opcode.PRE_DEC &&
-                op != Opcode.PRE_INC &&
-                op != Opcode.POST_INC &&
-                op != Opcode.POST_DEC &&
-                op != Opcode.FIND_CLASS_VAR)
-            throw generateException("Invalid right-hand value");
+        if(!(getLastIns() instanceof ReferencableIns)){
+            throw generateException("invalid left value");
+        }
     }
 
 
-    protected void DoFunctionCall() { addIns(new Instruction(Opcode.FUNCTION_CALL)); }
+    protected void DoFunctionCall() { addIns(new FunctionCallIns()); }
 
 
     protected void doFindConst(String n,boolean byname) {
         if(n.equals("NULL")){
-            addIns(new Instruction(Opcode.NULL));
+            addIns(new NullIns());
         }
         else {
             if(byname){
-                addIns(new Instruction(Opcode.FIND_CONST_BY_NAME));
+                addIns(new FindConstByNameIns());
             }
             else
-                addIns(new StringIns(Opcode.FIND_CONST, n));
+                addIns(new FindConstIns(n));
         }
     }
 
 
-    protected void DoFindFunction(String name) { addIns(new StringIns(Opcode.FIND_FUNCTION,name)); }
+    protected void DoFindFunction(String name) { addIns(new FindFunctionIns(name)); }
 
 
-    protected void DoExit() { addIns(new Instruction(Opcode.EXIT)); }
+    protected void DoExit() { addIns(new ExitIns()); }
 
 
     protected void DoPrint() {
-        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
-            addIns(new Instruction(Opcode.TOSTRING));
-        addIns(new Instruction(Opcode.PRINT));
+        Instruction ins = getLastIns();
+        if (!(ins instanceof StringIns || ins instanceof ToStringIns))
+            addIns(new ToStringIns());
+        addIns(new PrintIns());
     }
 
 
     protected void DoEcho() {
-        if (getLastIns().opcode != Opcode.STRING && getLastIns().opcode != Opcode.CONCAT)
-            addIns(new Instruction(Opcode.TOSTRING));
-        addIns(new Instruction(Opcode.ECHO));
+        Instruction ins = getLastIns();
+        if (!(ins instanceof StringIns || ins instanceof ToStringIns))
+            addIns(new ToStringIns());
+        addIns(new EchoIns());
     }
 
 
     protected void convertRvalueToLvalue() throws CompilationException {
         CheckWritable();
         Instruction ins = getLastIns();
-        switch (ins.opcode){
-            case Opcode.FIND_VARIABLE:ins.opcode = Opcode.FIND_VARIABLE_AS_REFERENCE;break;
-            case Opcode.SUBSCRIPT:ins.opcode = Opcode.SUBSCRIPT_AS_REFERENCE;break;
-            case Opcode.REQUEST_MEMBER:ins.opcode = Opcode.REQUEST_MEMBER_AS_REFERENCE;break;
-            case Opcode.FIND_VARIABLE_BY_NAME:ins.opcode = Opcode.FIND_VARIABLE_BY_NAME_AS_REFERENCE;break;
-            case Opcode.MAX_SUBSCRIPT:ins.opcode = Opcode.MAX_SUBSCRIPT_AS_REFERENCE;break;
-            case Opcode.FUNCTION_CALL:addIns(new Instruction(Opcode.CHECK_REF));break;
-            case Opcode.FIND_CLASS_VAR:((IntIns)ins).ins = 1;break;
-
-        }
+        assert ins instanceof ReferencableIns;
+        ((ReferencableIns) ins).convertToLvalue();
     }
 
     protected void doArgItem(){
         Instruction ins = getLastIns();
-        switch (ins.opcode){
-            case Opcode.FIND_VARIABLE:ins.opcode = Opcode.FIND_VARIABLE_AS_REFERENCE;break;
-            case Opcode.SUBSCRIPT:ins.opcode = Opcode.SUBSCRIPT_AS_REFERENCE;break;
-            case Opcode.REQUEST_MEMBER:ins.opcode = Opcode.REQUEST_MEMBER_AS_REFERENCE;break;
-            case Opcode.FIND_VARIABLE_BY_NAME:ins.opcode = Opcode.FIND_VARIABLE_BY_NAME_AS_REFERENCE;break;
-            case Opcode.MAX_SUBSCRIPT:ins.opcode = Opcode.MAX_SUBSCRIPT_AS_REFERENCE;break;
-            case Opcode.FIND_CLASS_VAR:((IntIns)ins).ins = 1;
+        if(ins instanceof ReferencableIns){
+            ((ReferencableIns) ins).convertToLvalue();
         }
     }
 
 
     protected void DoBeginIfStatement() {
         IfContext con = new IfContext();
-        IntIns ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
+        ConditionalGotoIns ins = new ConditionalGotoIns(true);
         addIns(ins);
         con.last_ins = ins;
         ifstmt_stack.push(con);
@@ -686,16 +682,16 @@ public class JZendCompiler implements WarningReporter {
 
 
     protected void DoEndIfBlock() {
-        IntIns ins = new IntIns(Opcode.GOTO);
+        GotoIns ins = new GotoIns();
         addIns(ins);
-        ifstmt_stack.peek().last_ins.ins = getLine();
+        ifstmt_stack.peek().last_ins.line = getLine();
         ifstmt_stack.peek().last_ins = null;
         ifstmt_stack.peek().pending_exit_ins.add(ins);
     }
 
 
     protected void DoElseIfBlock() {
-        IntIns ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
+        ConditionalGotoIns ins = new ConditionalGotoIns(true);
         addIns(ins);
         ifstmt_stack.peek().last_ins = ins;
     }
@@ -704,7 +700,7 @@ public class JZendCompiler implements WarningReporter {
     protected void DoEndIfStatement() {
         IfContext con = ifstmt_stack.pop();
         if (con.last_ins != null) /*if not true,there isn't an else block.*/
-            con.last_ins.ins = getLine();
+            con.last_ins.line = getLine();
         con.finish(getLine());
     }
 
@@ -712,21 +708,20 @@ public class JZendCompiler implements WarningReporter {
     protected void DoConditionalExpr(int where) {
         switch (where){
             case 0:/*begin of first expression*/
-                IntIns ins = new IntIns(Opcode.CONDITIONAL_GOTO);
-                IntIns ins2 = new IntIns(Opcode.GOTO);
-                conditional_expr_stack.push(ins2);
-                addIns(ins);
-                addIns(ins2);
-                ins.ins = getLine();
+                ConditionalGotoIns ins1 = new ConditionalGotoIns(true);
+                ConditionalExprContext ctx = new ConditionalExprContext();
+                ctx.mainIns = ins1;
+                conditional_expr_stack.push(ctx);
+                addIns(ins1);
                 break;
             case 1:/*begin of second expression*/
-                ins = new IntIns(Opcode.GOTO);
-                addIns(ins);
-                conditional_expr_stack.pop().ins = getLine();
-                conditional_expr_stack.push(ins);
+                ctx = conditional_expr_stack.peek();
+                ctx.skipIns = new GotoIns();
+                addIns(ctx.skipIns);
+                ctx.mainIns.line = getLine();
                 break;
             case 2:/*end of expression*/
-                conditional_expr_stack.pop().ins = getLine();
+                conditional_expr_stack.pop().skipIns.line = getLine();
                 break;
             default:throw new AssertionError("Unknown location in conditional expression:"+ where);
         }
@@ -743,15 +738,15 @@ public class JZendCompiler implements WarningReporter {
                 ctx.enterLoop(getLine());
                 break;
             case 1://end of expression,begin of block
-                IntIns ins2 = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
+                ConditionalGotoIns ins2 = new ConditionalGotoIns(true);
                 addIns(ins2);
                 while_loop_escape_stack.push(ins2);
                 break;
             case 2://end if the while statement
                 //DoubleIntIns entry_ins = loop_entry_stack.pop();
-                IntIns ins3 = new IntIns(Opcode.GOTO,ctx.getLoopStartLine());
+                GotoIns ins3 = new GotoIns(ctx.getLoopStartLine());
                 addIns(ins3);
-                while_loop_escape_stack.pop().ins = getLine();
+                while_loop_escape_stack.pop().line = getLine();
                 //entry_ins.ins2 = getLine();
                 ctx.leaveLoop(getLine());
                 break;
@@ -768,7 +763,7 @@ public class JZendCompiler implements WarningReporter {
                 ctx.enterLoop(getLine());
                 break;
             case 2://end of expression
-                addIns(new IntIns(Opcode.CONDITIONAL_GOTO,do_while_loop_entry_stack.pop()));
+                addIns(new ConditionalGotoIns(do_while_loop_entry_stack.pop(),false));
                 ctx.leaveLoop(getLine());
                 break;
             default:throw new AssertionError("Unknown location in do-while:" + where);
@@ -778,24 +773,24 @@ public class JZendCompiler implements WarningReporter {
     protected void DoForStatement(int where) {
         switch(where){
             case 0://end of the first expression,begin of second expression
-                addIns(new Instruction(Opcode.POP));
+                addIns(new PopIns());
                 ctx.enterLoop(getLine());
                 for_loop_stack.push(new ForContext());
                 break;
             case 1://end of second expression,begin of third expression
-                DoubleIntIns ins2 = new DoubleIntIns(Opcode.OPTIONAL_GOTO);
+                OptionalGotoIns ins2 = new OptionalGotoIns();
                 addIns(ins2);
                 for_loop_stack.peek().cond_ins = ins2;
                 for_loop_stack.peek().loop_line = getLine();
                 break;
             case 2://end of third expression,begin of code block
-                IntIns ins_goto = new IntIns(Opcode.GOTO,ctx.getLoopStartLine());
+                GotoIns ins_goto = new GotoIns(ctx.getLoopStartLine());
                 addIns(ins_goto);
-                for_loop_stack.peek().cond_ins.ins1 = getLine();
+                for_loop_stack.peek().cond_ins.line1 = getLine();
                 break;
             case 3://end of code block
-                addIns(new IntIns(Opcode.GOTO,for_loop_stack.peek().loop_line));
-                for_loop_stack.peek().cond_ins.ins2 = getLine();
+                addIns(new GotoIns(for_loop_stack.peek().loop_line));
+                for_loop_stack.peek().cond_ins.line2 = getLine();
                 ctx.leaveLoop(getLine());
                 for_loop_stack.pop();
                 break;
@@ -808,24 +803,24 @@ public class JZendCompiler implements WarningReporter {
             case 0://end of the foreach_expr
                 ForEachContext fctx = new ForEachContext();
                 foreach_context_stack.push(fctx);
-                DoubleIntIns iterator_ins = new DoubleIntIns(Opcode.ARRAY_ITERATOR,0,0);
-                addIns(iterator_ins);
-                addIns(new IntIns(Opcode.TSTORE,fctx.getTempRegister()));
+                fctx.iterator_ins_line = getLine();
+                addIns(new ArrayIteratorIns(false));
+                addIns(new StoreIns(fctx.getTempRegister()));
+
                 ctx.enterLoop(getLine());
-                fctx.iterator_ins = iterator_ins;
-                addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
-                addIns(new Instruction(Opcode.ITERATOR_END));
-                fctx.escape_ins = new IntIns(Opcode.CONDITIONAL_NOT_GOTO);
+                addIns(new TloadIns(fctx.getTempRegister()));
+                addIns(new IteratorOptrIns(IteratorOptrIns.OPTR_END));
+                fctx.escape_ins = new ConditionalGotoIns(true);
                 addIns(fctx.escape_ins);
+                addIns(new TloadIns(fctx.getTempRegister()));
+                addIns(new IteratorOptrIns(IteratorOptrIns.OPTR_NEXT));
+                addIns(new PopIns());
+
                 break;
             case 1://end of the whole statement
                 fctx = foreach_context_stack.peek();
-                addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
-                addIns(new Instruction(Opcode.ITERATOR_NEXT));
-                addIns(new IntIns(Opcode.TSTORE,fctx.getTempRegister()));
-                addIns(new IntIns(Opcode.GOTO,ctx.getLoopStartLine()));
-                ctx.leaveLoop(getLine());
-                fctx.escape_ins.ins = getLine();
+                addIns(new GotoIns(ctx.getLoopStartLine()));
+                fctx.escape_ins.line = getLine();
                 foreach_context_stack.pop().finish();
                 break;
             default:throw new AssertionError("unknown position in foreach");
@@ -835,24 +830,30 @@ public class JZendCompiler implements WarningReporter {
     protected void doForEachFirstExpr(boolean is_ref) throws CompilationException {
         convertRvalueToLvalue();
         ForEachContext fctx = foreach_context_stack.peek();
-        fctx.iterator_ins.ins1 = is_ref ? 1 : 0;
-        addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
-        fctx.first_expr_ins = new Instruction(Opcode.ARRAY_ITERATOR_GET);
-        addIns(fctx.first_expr_ins);
-        addIns(new Instruction(Opcode.ASSIGN));
-        addIns(new Instruction(Opcode.POP));
+        if(is_ref){
+            Instruction itIns = getIns(fctx.iterator_ins_line);
+            assert itIns instanceof ArrayIteratorIns;
+            ((ArrayIteratorIns) itIns).isRef = true;
+        }
+        addIns(new TloadIns(fctx.getTempRegister()));
+        fctx.first_expr_ins_line = getLine();
+        addIns(new ArrayIteratorGet());
+        addIns(new BinaryOperatorIns(Operator.BINARY_ASSIGN));
     }
 
     protected void doForEachSecondExpr(boolean is_ref) throws CompilationException {
         convertRvalueToLvalue();
         ForEachContext fctx = foreach_context_stack.peek();
-        fctx.iterator_ins.ins2 = is_ref ? 1 : 0;
-        fctx.first_expr_ins.opcode = Opcode.MAP_ITERATOR_KEY;
-        fctx.iterator_ins.opcode = Opcode.MAP_ITERATOR;
-        addIns(new IntIns(Opcode.TLOAD,fctx.getTempRegister()));
-        addIns(new Instruction(Opcode.MAP_ITERATOR_VALUE));
-        addIns(new Instruction(Opcode.ASSIGN));
-        addIns(new Instruction(Opcode.POP));
+        Instruction itIns = getIns(fctx.iterator_ins_line);
+        assert itIns instanceof ArrayIteratorIns;
+        if(((ArrayIteratorIns) itIns).isRef){
+            throw generateException("Key element cannot be a reference");
+        }
+        setIns(fctx.iterator_ins_line,new MapIteratorIns(is_ref));
+        setIns(fctx.first_expr_ins_line,new MapIteratorGetIns(MapIteratorGetIns.KEY));
+        addIns(new TloadIns(fctx.getTempRegister()));
+        addIns(new MapIteratorGetIns(MapIteratorGetIns.VALUE));
+        addIns(new BinaryOperatorIns(Operator.BINARY_ASSIGN));
     }
 
     protected void DoSwitchStatement(int where) {
@@ -863,22 +864,22 @@ public class JZendCompiler implements WarningReporter {
                 ctx.enterSwitch();
                 break;
             case 1://end of expression,begin of code block
-                addIns(new IntIns(Opcode.TSTORE,switchstmt_stack.peek().treg_index));
-                IntIns ins1 = new IntIns(Opcode.GOTO);
+                addIns(new StoreIns(switchstmt_stack.peek().treg_index));
+                GotoIns ins1 = new GotoIns(Opcode.GOTO);
                 addIns(ins1);
                 switchstmt_stack.peek().last_ins = ins1;
                 break;
             case 2://end of the statement
                 SwitchContext sctx2 = switchstmt_stack.peek();
                 if(sctx2.first_default_line != -1){
-                    IntIns skip_ins = new IntIns(Opcode.GOTO);
+                    GotoIns skip_ins = new GotoIns(Opcode.GOTO);
                     addIns(skip_ins);
-                    sctx2.last_ins.ins = getLine();
-                    addIns(new IntIns(Opcode.GOTO,sctx2.first_default_line));
-                    skip_ins.ins = getLine();
+                    sctx2.last_ins.setLine(getLine());
+                    addIns(new GotoIns(sctx2.first_default_line));
+                    skip_ins.line = getLine();
                 }
                 else{
-                    sctx2.last_ins.ins = getLine();
+                    sctx2.last_ins.setLine(getLine());
                 }
                 ctx.leaveSwitch(getLine());
                 switchstmt_stack.pop().finish();
@@ -891,18 +892,18 @@ public class JZendCompiler implements WarningReporter {
         SwitchContext sctx = switchstmt_stack.peek();
         switch(which){
             case 0://case label begin
-                IntIns ins = new IntIns(Opcode.GOTO);
+                GotoIns ins = new GotoIns(Opcode.GOTO);
                 addIns(ins);
-                sctx.last_ins.ins = getLine();
-                addIns(new IntIns(Opcode.TLOAD,sctx.treg_index));
+                sctx.last_ins.setLine(getLine());
+                addIns(new TloadIns(sctx.treg_index));
                 sctx.case_skip_ins = ins;
                 break;
             case 1://case label end
-                addIns(new Instruction(Opcode.NEQU));
-                ins = new IntIns(Opcode.CONDITIONAL_GOTO);
-                addIns(ins);
-                sctx.last_ins = ins;
-                sctx.case_skip_ins.ins = getLine();
+                addIns(new BinaryOperatorIns(Operator.BINARY_EQUAL));
+                ConditionalGotoIns ins2 = new ConditionalGotoIns(true);
+                addIns(ins2);
+                sctx.last_ins = ins2;
+                sctx.case_skip_ins.line = getLine();
                 break;
             case 2://default label
                 SwitchContext ctx = switchstmt_stack.peek();
@@ -915,7 +916,7 @@ public class JZendCompiler implements WarningReporter {
 
     protected void DoBreakOrContinue(int which,boolean has_expr) throws CompilationException {
         if(!has_expr)
-            addIns(new IntIns(Opcode.INTEGER,1));
+            addIns(new IntegerIns(1));
         switch(which){
             case 0://break
                 if(!ctx.isBreakAvailable()){
@@ -958,10 +959,10 @@ public class JZendCompiler implements WarningReporter {
         switch(which){
             case 0://return
                 current_routine.hasReturn = true;
-                addIns(new Instruction(Opcode.RETURN));
+                addIns(new ReturnOrThrowIns(false));
                 break;
             case 1://throw
-                addIns(new Instruction(Opcode.THROW));
+                addIns(new ReturnOrThrowIns(true));
                 break;
             default:throw new AssertionError("not return nor throw:" + which);
         }
@@ -969,7 +970,8 @@ public class JZendCompiler implements WarningReporter {
 
     protected void DoUnset() throws CompilationException {
         convertRvalueToLvalue();
-        addIns(new Instruction(Opcode.UNSET));
+        //TODO:unset in compile
+        addIns(new UnSetIns());
     }
 
     protected void doDeclareConst(String name) {
@@ -986,19 +988,19 @@ public class JZendCompiler implements WarningReporter {
     }
 
     protected void DoGlobal(String name) {
-        addIns(new StringIns(Opcode.GLOBAL,name));
+        addIns(new GlobalIns(name));
     }
 
     private void finishCompiling() {
-        addIns(new IntIns(Opcode.INTEGER,0));
-        addIns(new Instruction(Opcode.EXIT));
+        addIns(new IntegerIns(0));
+        addIns(new ExitIns());
         top_routine.loopTable = ctx.getLoopTable();
     }
 
     protected void doBeginFunctionDeclaration(String fname, boolean is_ref) throws CompilationException {
         ZendFunction f;
         if((f = current_routine.getFunction(fname)) != null){
-            throw generateException("Cannot redeclare " + fname + "() (previously declared in " + f.getHead().filename +":" + f.getStartLine() + ")");
+            throw generateException("Cannot redeclare " + fname + "() (previously declared in " + f.getHead().filename + ")");
         }
         function_name_stack.push(fname);
         currentHead = new FunctionHead(fname,is_ref);
@@ -1011,7 +1013,7 @@ public class JZendCompiler implements WarningReporter {
             current_routine.addFunction(func);
         }
         else{
-            addIns(new NewFuncIns(func));
+            addIns(new NewFunctionIns(func));
         }
         currentHead = null;
         current_routine = func.getBody();
@@ -1040,8 +1042,8 @@ public class JZendCompiler implements WarningReporter {
     protected void doEndFunction() {
         function_name_stack.pop();
         if(!current_routine.hasReturn){
-            addIns(new Instruction(Opcode.NULL));
-            addIns(new Instruction(Opcode.RETURN));
+            addIns(new NullIns());
+            addIns(new ReturnOrThrowIns(false));
         }
 
         current_routine.loopTable = ctx.getLoopTable();
@@ -1053,10 +1055,10 @@ public class JZendCompiler implements WarningReporter {
 
     protected void doAssign(boolean is_array) {
         if(!is_array){
-            addIns(new Instruction(Opcode.ASSIGN));
+            addIns(new BinaryOperatorIns(Operator.BINARY_ASSIGN));
         }
         else{
-            addIns(new Instruction(Opcode.ARRAY_ASSIGN));
+            addIns(new ArrayAssignIns());
         }
     }
 
@@ -1065,22 +1067,22 @@ public class JZendCompiler implements WarningReporter {
     }
 
     protected void DoNew() {
-        if(getLastIns().opcode == Opcode.FUNCTION_CALL)
-            getLastIns().opcode = Opcode.NEW;
+        if(getLastIns() instanceof FunctionCallIns)
+            setLastIns(new NewIns());
         else
-            addIns(new Instruction(Opcode.NEW));
+            addIns(new NewIns());
     }
 
     protected void DoFindClass(String name) {
-        addIns(new StringIns(Opcode.FIND_CLASS,name));
+        addIns(new FindClassIns(name));
     }
 
     protected void DoInstanceOf() {
-        addIns(new Instruction(Opcode.INSTANCEOF));
+        addIns(new BinaryOperatorIns(Operator.BINARY_INSTANCEOF));
     }
 
     protected void DoPackArg(int count) {
-        addIns(new IntIns(Opcode.PACK_ARG,count));
+        addIns(new PackArgIns(count));
     }
 
     protected String getCurrentNameSpace() {
@@ -1096,22 +1098,26 @@ public class JZendCompiler implements WarningReporter {
     }
 
     class IfContext{
-        public List<IntIns> pending_exit_ins;
-        public IntIns last_ins;
+        public List<GotoIns> pending_exit_ins;
+        public ConditionalGotoIns last_ins;
         public IfContext(){
             pending_exit_ins = new ArrayList<>();
         }
         public void finish(int line){
-            for(IntIns ins : pending_exit_ins){
-                ins.ins = line;
+            for(GotoIns ins : pending_exit_ins){
+                ins.line = line;
             }
         }
     }
+    class ConditionalExprContext{
+        ConditionalGotoIns mainIns;
+        GotoIns skipIns;
+    }
     class SwitchContext{
-        public IntIns last_ins;
+        public SingleJumpIns last_ins;
         public int first_default_line = -1;
         public int treg_index;
-        public IntIns case_skip_ins;
+        public GotoIns case_skip_ins;
 
         public SwitchContext(){
             treg_index = regmgr.requestTempReg();
@@ -1122,14 +1128,14 @@ public class JZendCompiler implements WarningReporter {
     }
 
     class ForContext{
-        DoubleIntIns cond_ins;
+        OptionalGotoIns cond_ins;
         int loop_line;
     }
     class ForEachContext{
         private int treg_index;
-        IntIns escape_ins;
-        DoubleIntIns iterator_ins;
-        Instruction first_expr_ins;
+        ConditionalGotoIns escape_ins;
+        int iterator_ins_line;
+        int first_expr_ins_line;
         public ForEachContext(){
             treg_index = regmgr.requestTempReg();
         }

@@ -10,7 +10,7 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
  */
 
 @ExplicitTypeInstruction
-public class FindClassVarByNameIns implements Instruction {
+public class FindClassVarByNameIns implements ReferencableIns {
     public boolean isRef;
 
     public FindClassVarByNameIns(boolean ref){
@@ -39,5 +39,15 @@ public class FindClassVarByNameIns implements Instruction {
     @Override
     public String toString() {
         return "FIND_CLASS_VAR_BY_NAME " + (isRef ? "&" : "");
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

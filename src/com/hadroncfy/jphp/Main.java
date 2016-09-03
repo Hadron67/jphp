@@ -30,11 +30,11 @@ public class Main {
             result.dump(System.out);
             System.out.println("result:");
 
-            Context env = new Context(System.out);
+            /*Context env = new Context(System.out);
             result.call(env,null);
             if(env.isError()){
                 System.out.print(env.getErrorMsg());
-            }
+            }*/
         } catch (CompilationException e) {
             System.out.print("PHP Fatal Error:" + e.getMessage());
         } catch (FileNotFoundException | ParseException e) {

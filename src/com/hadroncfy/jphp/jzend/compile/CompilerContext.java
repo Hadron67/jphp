@@ -1,8 +1,7 @@
 package com.hadroncfy.jphp.jzend.compile;
 
-import com.hadroncfy.jphp.jzend.compile.ins.Instruction;
-import com.hadroncfy.jphp.jzend.compile.ins.IntIns;
-import com.hadroncfy.jphp.jzend.compile.ins.Opcode;
+import com.hadroncfy.jphp.jzend.ins.Instruction;
+import com.hadroncfy.jphp.jzend.ins.BreakOrContinueIns;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -81,7 +80,7 @@ class CompilerContext {
         BreakItem item = new BreakItem(blist);
         breakItems.add(item);
 
-        return new IntIns(Opcode.BREAK,index);
+        return new BreakOrContinueIns(index,true);
     }
 
     protected Instruction newContinueInstruction(){
@@ -91,7 +90,7 @@ class CompilerContext {
         for(int i = 0;i < size;i++){
             clist[i] = continue_entry_stack.get(size - i - 1);
         }
-        return new IntIns(Opcode.CONTINUE,index);
+        return new BreakOrContinueIns(index,false);
     }
 
     protected LoopTable getLoopTable(){

@@ -26,6 +26,11 @@ public class Zfloat implements Zval,Number,Concatable {
     }
 
     @Override
+    public Zval clone() {
+        return new Zfloat(value);
+    }
+
+    @Override
     public boolean doTypeCheck(String typename) {
         return typename.equals("real") || typename.equals("float") || typename.equals("double");
     }
@@ -65,6 +70,17 @@ public class Zfloat implements Zval,Number,Concatable {
 
     @Override
     public Zval minus(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat(value - ((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat(value - ((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
@@ -85,7 +101,9 @@ public class Zfloat implements Zval,Number,Concatable {
 
     @Override
     public Zarray arrayCast() {
-        return null;
+        Zarray ret = new Zarray();
+        ret.addItem(new Zfloat(value));
+        return ret;
     }
 
     @Override
@@ -105,67 +123,145 @@ public class Zfloat implements Zval,Number,Concatable {
 
     @Override
     public Zval bitAnd(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat((int)value & (int)((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat((int)value & (int)((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval bitOr(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat((int)value | (int)((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat((int)value | (int)((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval bitXor(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat((int)value ^ (int)((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat((int)value ^ (int)((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval bitNot() {
-        return null;
+        return new Zfloat(~(int)value);
     }
 
     @Override
-    public Zval lessThan(Zval zval) {
-        return null;
+    public Zval leftShift(Zval zval) {
+        int i = 0;
+        if(zval instanceof Zint){
+            i = ((Zint) zval).value;
+        }
+        else if(zval instanceof Zfloat){
+            i =(int) ((Zfloat) zval).value;
+        }
+        else if(zval instanceof Castable){
+            i = ((Castable) zval).intCast().value;
+        }
+
+        return new Zint((int)value << i);
     }
 
     @Override
-    public Zval moreThan(Zval zval) {
-        return null;
-    }
+    public Zval rightShift(Zval zval) {
+        int i = 0;
+        if(zval instanceof Zint){
+            i = ((Zint) zval).value;
+        }
+        else if(zval instanceof Zfloat){
+            i =(int) ((Zfloat) zval).value;
+        }
+        else if(zval instanceof Castable){
+            i = ((Castable) zval).intCast().value;
+        }
 
-    @Override
-    public Zval equal(Zval zval) {
-        return null;
-    }
-
-    @Override
-    public Zval identical(Zval zval) {
-        return null;
+        return new Zint((int)value >> i);
     }
 
     @Override
     public Zval multiply(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat(value * ((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat(value * ((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval divide(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat(value / ((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat(value / ((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval mod(Zval zval) {
+        if(zval instanceof Zstring){
+            zval = ((Zstring) zval).floatCast();
+        }
+
+        if(zval instanceof Zfloat){
+            return new Zfloat(value % ((Zfloat) zval).value);
+        }
+        else if(zval instanceof Castable){
+
+            return new Zfloat(value % ((Castable) zval).floatCast().value);
+        }
         return null;
     }
 
     @Override
     public Zval pos() {
-        return null;
+        return new Zfloat(value);
     }
 
     @Override
     public Zval neg() {
-        return null;
+        return new Zfloat(-value);
     }
 
     @Override
@@ -177,5 +273,29 @@ public class Zfloat implements Zval,Number,Concatable {
             return new Zstring(value + ((Castable) zval).stringCast().value);
         }
         return null;
+    }
+
+    private static int balance(double i,double j){
+        return i != j ? i < j ? -1 : 1 : 0;
+    }
+
+    @Override
+    public int compareTo(Zval zval) {
+
+        if(zval instanceof Zfloat){
+            return balance(value,((Zfloat) zval).value);
+        }
+        else if(zval instanceof Zint){
+            return balance(value,((Zint) zval).value);
+        }
+        else if(zval instanceof Castable){
+            return balance(value,((Castable) zval).floatCast().value);
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean identical(Zval val) {
+        return val instanceof Zfloat && value == ((Zfloat) val).value;
     }
 }

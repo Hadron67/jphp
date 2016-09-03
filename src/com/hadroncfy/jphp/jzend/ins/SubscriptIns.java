@@ -11,14 +11,15 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
  */
 
 @ExplicitTypeInstruction
-public class SubscriptIns implements Instruction {
+public class SubscriptIns implements ReferencableIns {
 
     public boolean isRef;
 
     public boolean isMax = false;
 
-    public SubscriptIns(boolean isRef){
+    public SubscriptIns(boolean isRef,boolean isMax){
         this.isRef = isRef;
+        this.isMax = isMax;
     }
     @Override
     public void exec(VM vm) {
@@ -46,5 +47,15 @@ public class SubscriptIns implements Instruction {
     @Override
     public String toString() {
         return (isMax ? "MAX_SUBSCRIPT " : "SUBSCRIPT ") + (isRef ? "&" : "");
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

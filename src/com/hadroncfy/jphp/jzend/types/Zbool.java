@@ -1,5 +1,6 @@
 package com.hadroncfy.jphp.jzend.types;
 
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Boolable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Castable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Concatable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
@@ -7,7 +8,7 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 /**
  * Created by cfy on 16-8-12.
  */
-public class Zbool implements Zval,Castable,Concatable {
+public class Zbool implements Zval,Castable,Concatable,Boolable {
     public static final Zbool TRUE = new Zbool(true);
     public static final Zbool FALSE = new Zbool(false);
     public boolean value;
@@ -71,7 +72,9 @@ public class Zbool implements Zval,Castable,Concatable {
 
     @Override
     public Zarray arrayCast() {
-        return null;
+        Zarray ret = new Zarray();
+        ret.addItem(this);
+        return ret;
     }
 
     @Override
@@ -83,5 +86,32 @@ public class Zbool implements Zval,Castable,Concatable {
             return new Zstring(value ? "1" : "0" + ((Castable) zval).stringCast().value);
         }
         return null;
+    }
+
+    @Override
+    public Zval and(Zval zval) {
+        if(zval instanceof Zbool){
+            return Zbool.asZbool(value && ((Zbool) zval).value);
+        }
+        else if(zval instanceof Castable){
+            return Zbool.asZbool(value && ((Castable) zval).boolCast().value);
+        }
+        return null;
+    }
+
+    @Override
+    public Zval or(Zval zval) {
+        if(zval instanceof Zbool){
+            return Zbool.asZbool(value || ((Zbool) zval).value);
+        }
+        else if(zval instanceof Castable){
+            return Zbool.asZbool(value || ((Castable) zval).boolCast().value);
+        }
+        return null;
+    }
+
+    @Override
+    public Zval not() {
+        return Zbool.asZbool(!value);
     }
 }

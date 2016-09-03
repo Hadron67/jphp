@@ -9,7 +9,7 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 /**
  * Created by cfy on 16-9-1.
  */
-public class FindVarByNameIns implements Instruction {
+public class FindVarByNameIns implements ReferencableIns {
 
     public boolean isRef = false;
     public FindVarByNameIns(boolean r){
@@ -36,5 +36,15 @@ public class FindVarByNameIns implements Instruction {
     @Override
     public String toString() {
         return "FIND_VAR_BY_NAME " + (isRef ? "&" : "");
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

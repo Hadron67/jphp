@@ -6,7 +6,7 @@ import com.hadroncfy.jphp.jzend.types.Zref;
 /**
  * Created by cfy on 16-9-1.
  */
-public class FindVarIns implements Instruction {
+public class FindVarIns implements ReferencableIns {
     public String vname;
     public boolean isRef = false;
     public FindVarIns(String vname,boolean isRef){
@@ -31,5 +31,15 @@ public class FindVarIns implements Instruction {
     @Override
     public String toString() {
         return "FIND_VAR " + (isRef ? "&" : "") + vname;
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

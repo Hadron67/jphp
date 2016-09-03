@@ -6,5 +6,5 @@ package com.hadroncfy.jphp.jzend.types.typeInterfaces;
 public interface Boolable {
     Zval and(Zval zval);
     Zval or(Zval zval);
-    Zval not(Zval zval);
+    Zval not();
 }

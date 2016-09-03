@@ -10,12 +10,12 @@ import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
  */
 
 @ExplicitTypeInstruction
-public class RequestMemberByNameFuncIns implements Instruction {
+public class RequestMemberByNameIns implements ReferencableIns {
 
     public boolean isRef;
     public boolean isFunc;
 
-    public RequestMemberByNameFuncIns(boolean isRef,boolean isFunc){
+    public RequestMemberByNameIns(boolean isRef, boolean isFunc){
         this.isFunc = isFunc;
         this.isRef = isRef;
     }
@@ -40,5 +40,15 @@ public class RequestMemberByNameFuncIns implements Instruction {
     @Override
     public String toString() {
         return (isFunc ? "REQUEST_FUNC_BY_NAME" : "REQUEST_MEMBER_BY_NAME") + (isRef ? "&" : " ");
+    }
+
+    @Override
+    public void convertToLvalue() {
+        isRef = true;
+    }
+
+    @Override
+    public void convertToRvalue() {
+        isRef = false;
     }
 }

@@ -1,14 +1,16 @@
 package com.hadroncfy.jphp.jzend.types;
 
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.*;
+import com.hadroncfy.jphp.jzend.types.typeInterfaces.Comparable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Number;
 
 /**
  * Created by cfy on 16-8-12.
  *
  */
-public class Zstring implements CompleteZval,Concatable {
+public class Zstring implements Prefixable,OperatableL1,OperatableL2,Comparable,Concatable,Zval,Castable,Array,Bytable,Boolable {
     public String value;
+
     public Zstring(String s){
         value = s;
     }
@@ -22,6 +24,26 @@ public class Zstring implements CompleteZval,Concatable {
     @Override
     public String dump() {
         return new StringBuilder().append("string(").append(value.length()).append(") \"").append(value).append("\"").toString();
+    }
+
+    private static String blank(int count){
+        StringBuilder sb = new StringBuilder();
+        while(count --> 0){
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    public void assign(int index,String s){
+        if(index >= 0 && index < s.length()){
+            value = value.substring(0 , index) + (s.length() == 0? "" : s.charAt(0)) + value.substring(index - 1,value.length() - 1);
+        }
+        else if(index >= s.length()){
+            value += blank(index - s.length()) + (s.length() == 0? "" : s.charAt(0));
+        }
+        else {
+            value = blank(1 + index) + (s.length() == 0? "" : s.charAt(0)) + value;
+        }
     }
 
     @Override
@@ -40,12 +62,12 @@ public class Zstring implements CompleteZval,Concatable {
 
     @Override
     public Zval plus(Zval zval) {
-        return ((Number)this.toNumber()).plus(zval);
+        return this.toNumber().plus(zval);
     }
 
     @Override
     public Zval minus(Zval zval) {
-        return ((Number)this.toNumber()).minus(zval);
+        return this.toNumber().minus(zval);
     }
 
     @Override
@@ -104,7 +126,7 @@ public class Zstring implements CompleteZval,Concatable {
         return new Zstring(value);
     }
 
-    public Zval toNumber(){
+    public Number toNumber(){
         try{
             double ret = Double.parseDouble(value);
             if(ret % 1 == 0){
@@ -147,8 +169,8 @@ public class Zstring implements CompleteZval,Concatable {
         else if(obj instanceof Zbool){
             return value.equals("true") && ((Zbool) obj).value || value.equals("false") && !((Zbool) obj).value;
         }
+        else return false;
 
-        return super.equals(obj);
     }
 
     @Override
@@ -158,7 +180,20 @@ public class Zstring implements CompleteZval,Concatable {
 
     @Override
     public Zref subscript(Zval value) {
-        return null;
+        int i;
+        if(value instanceof Zint){
+            i = ((Zint) value).value;
+        }
+        else if(value instanceof Zfloat){
+            i = (int) ((Zfloat) value).value;
+        }
+        else if(value instanceof Castable){
+            i = ((Castable) value).intCast().value;
+        }
+        else{
+            i = 0;
+        }
+        return new StringSubRef(i);
     }
 
     @Override
@@ -168,72 +203,200 @@ public class Zstring implements CompleteZval,Concatable {
 
     @Override
     public Zval and(Zval zval) {
-        return null;
+
+        return boolCast().and(zval);
     }
 
     @Override
     public Zval or(Zval zval) {
-        return null;
+        return boolCast().or(zval);
     }
 
     @Override
-    public Zval not(Zval zval) {
-        return null;
+    public Zval not() {
+        return boolCast().not();
     }
 
     @Override
     public Zval bitAnd(Zval zval) {
-        return null;
+        if(zval instanceof Zstring){
+            char[] ret;
+            char[] s;
+            int l;
+            if(value.length() > ((Zstring) zval).value.length()){
+                ret = value.toCharArray();
+                s = ((Zstring) zval).value.toCharArray();
+                l = ((Zstring) zval).value.length();
+            }
+            else{
+                ret = ((Zstring) zval).value.toCharArray();
+                s = value.toCharArray();
+                l = value.length();
+            }
+            while(l --> 0){
+                ret[l] &= s[l];
+            }
+            return new Zstring(new String(ret));
+        }
+        else{
+            return toNumber().bitAnd(zval);
+        }
     }
 
     @Override
     public Zval bitOr(Zval zval) {
-        return null;
+        if(zval instanceof Zstring){
+            char[] ret;
+            char[] s;
+            int l;
+            if(value.length() > ((Zstring) zval).value.length()){
+                ret = value.toCharArray();
+                s = ((Zstring) zval).value.toCharArray();
+                l = ((Zstring) zval).value.length();
+            }
+            else{
+                ret = ((Zstring) zval).value.toCharArray();
+                s = value.toCharArray();
+                l = value.length();
+            }
+            while(l --> 0){
+                ret[l] |= s[l];
+            }
+            return new Zstring(new String(ret));
+        }
+        else{
+            return toNumber().bitAnd(zval);
+        }
     }
 
     @Override
     public Zval bitXor(Zval zval) {
-        return null;
+        if(zval instanceof Zstring){
+            char[] ret;
+            char[] s;
+            int l;
+            if(value.length() > ((Zstring) zval).value.length()){
+                ret = value.toCharArray();
+                s = ((Zstring) zval).value.toCharArray();
+                l = ((Zstring) zval).value.length();
+            }
+            else{
+                ret = ((Zstring) zval).value.toCharArray();
+                s = value.toCharArray();
+                l = value.length();
+            }
+            while(l --> 0){
+                ret[l] ^= s[l];
+            }
+            return new Zstring(new String(ret));
+        }
+        else{
+            return toNumber().bitAnd(zval);
+        }
     }
 
     @Override
     public Zval bitNot() {
-        return null;
+        char[] ret = value.toCharArray();
+        int l = value.length();
+        while(l --> 0){
+            ret[l] = (char)~ret[l];
+        }
+        return new Zstring(new String(ret));
     }
 
     @Override
-    public Zval lessThan(Zval zval) {
-        return null;
+    public Zval leftShift(Zval zval) {
+        if(zval instanceof Zstring){
+            char[] ret;
+            char[] s;
+            int l;
+            if(value.length() > ((Zstring) zval).value.length()){
+                ret = value.toCharArray();
+                s = ((Zstring) zval).value.toCharArray();
+                l = ((Zstring) zval).value.length();
+            }
+            else{
+                ret = ((Zstring) zval).value.toCharArray();
+                s = value.toCharArray();
+                l = value.length();
+            }
+            while(l --> 0){
+                ret[l] <<= s[l];
+            }
+            return new Zstring(new String(ret));
+        }
+        else{
+            return toNumber().bitAnd(zval);
+        }
     }
 
     @Override
-    public Zval moreThan(Zval zval) {
-        return null;
+    public Zval rightShift(Zval zval) {
+        if(zval instanceof Zstring){
+            char[] ret;
+            char[] s;
+            int l;
+            if(value.length() > ((Zstring) zval).value.length()){
+                ret = value.toCharArray();
+                s = ((Zstring) zval).value.toCharArray();
+                l = ((Zstring) zval).value.length();
+            }
+            else{
+                ret = ((Zstring) zval).value.toCharArray();
+                s = value.toCharArray();
+                l = value.length();
+            }
+            while(l --> 0){
+                ret[l] >>= s[l];
+            }
+            return new Zstring(new String(ret));
+        }
+        else{
+            return toNumber().bitAnd(zval);
+        }
     }
 
     @Override
-    public Zval equal(Zval zval) {
-        return null;
+    public int compareTo(Zval zval) {
+        if(zval instanceof Number){
+            return toNumber().compareTo(zval);
+        }
+        else if(zval instanceof Zstring){
+            return value.compareTo(((Zstring) zval).value);
+        }
+        else if(zval instanceof Zbool){
+            if(equals(zval)){
+                return 0;
+            }
+            else{
+                return -1;
+            }
+        }
+        else if(zval instanceof Zarray){
+            return -1;
+        }
+        return 0;
     }
 
     @Override
-    public Zval identical(Zval zval) {
-        return null;
+    public boolean identical(Zval val) {
+        return val instanceof Zstring && value.equals(((Zstring) val).value);
     }
 
     @Override
     public Zval multiply(Zval zval) {
-        return ((Number)this.toNumber()).multiply(zval);
+        return this.toNumber().multiply(zval);
     }
 
     @Override
     public Zval divide(Zval zval) {
-        return ((Number)this.toNumber()).divide(zval);
+        return this.toNumber().divide(zval);
     }
 
     @Override
     public Zval mod(Zval zval) {
-        return ((Number)this.toNumber()).mod(zval);
+        return this.toNumber().mod(zval);
     }
 
     @Override
@@ -243,7 +406,7 @@ public class Zstring implements CompleteZval,Concatable {
 
     @Override
     public Zval neg() {
-        return ((Number)toNumber()).neg();
+        return toNumber().neg();
     }
 
     @Override
@@ -255,5 +418,60 @@ public class Zstring implements CompleteZval,Concatable {
             return new Zstring(value + ((Castable) zval).stringCast().value);
         }
         return null;
+    }
+
+    public class StringSubRef implements Zref{
+
+        private int index;
+
+        private StringSubRef(int i){
+            index = i;
+        }
+
+        @Override
+        public Zval assign(Zval src) {
+            String s;
+            if(src instanceof Zstring){
+                s = ((Zstring) src).value;
+            }
+            else if(src instanceof Castable){
+                s = ((Castable) src).stringCast().value;
+            }
+            else{
+                return src;
+            }
+            Zstring.this.assign(index,s);
+            return src;
+        }
+
+        @Override
+        public Zval deRef() {
+            if(index >= value.length() || index < 0){
+                return new Zstring(" ");
+            }
+            else {
+                return new Zstring(value.charAt(index) + "");
+            }
+        }
+
+        @Override
+        public boolean doTypeCheck(String typename) {
+            return Zstring.this.doTypeCheck(typename);
+        }
+
+        @Override
+        public String dump() {
+            return deRef().dump();
+        }
+
+        @Override
+        public String getTypeName() {
+            return "string";
+        }
+
+        @Override
+        public Zval clone() {
+            return null;
+        }
     }
 }

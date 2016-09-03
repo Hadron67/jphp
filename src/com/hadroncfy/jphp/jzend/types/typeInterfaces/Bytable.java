@@ -8,4 +8,6 @@ public interface Bytable {
     Zval bitOr(Zval zval);
     Zval bitXor(Zval zval);
     Zval bitNot();
+    Zval leftShift(Zval zval);
+    Zval rightShift(Zval zval);
 }

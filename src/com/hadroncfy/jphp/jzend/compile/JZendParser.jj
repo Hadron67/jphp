@@ -525,10 +525,10 @@ void ForEachStatement() throws CompilationException:{}{
     )
 }
 void ForEachExpr() throws CompilationException:{
-    boolean r1 = false,r2 = false;
+    boolean r1 = false,r2 = false,hasSecond = false;
 }{
     [ <BITAND> { r1 = true; } ] AtomicExpr() { cp.doForEachFirstExpr(r1); } [
-        <DOUBLEARROW> [ [ <BITAND> { r2 = true; } ] AtomicExpr() ] { cp.doForEachSecondExpr(r2); }
+        <DOUBLEARROW> [ <BITAND> { r2 = true; } ] AtomicExpr() { cp.doForEachSecondExpr(r2); }
     ]
 }
 void TryCatchStatement()throws CompilationException:{}{
@@ -933,7 +933,7 @@ void ClassMemberAndConst() throws CompilationException:{
 void ClassMember() throws CompilationException:{
     Token t;
 }{
-    t = <VARIABLE> { cp.DoString(t.image);cp.doFindClassVar(false); }
+    t = <VARIABLE> { cp.doFindClassVar(t.image,false); }
     | t = <IDENTIFIER> (
         LOOKAHEAD( <LBRACKET> ) { cp.doFindClassFunction(t.image); }
         | { cp.doFindClassConst(t.image); }
@@ -987,7 +987,7 @@ void EcapedVar()throws CompilationException:{
         String property = t.image.substring(a + 2,b);
         cp.DoFindVariable(vname,false);
         cp.DoString(property);
-        cp.DoRequestMember(false);
+        cp.doRequestMember(property,false);
         cp.DoToString();
     }
 }
@@ -1093,11 +1093,11 @@ void ArgList()throws CompilationException:{
 void ObjectMember()throws CompilationException:{
     Token t;
 }{
-    t = <VARIABLE> { cp.DoFindVariable(t.image,false);cp.DoToString();cp.DoRequestMember(false);  }
-    | <DOLLAR> <LBBRACKET> Expr() <RBBRACKET> { cp.DoFindVariableByName(false);cp.DoToString();cp.DoRequestMember(false);  }
+    t = <VARIABLE> { cp.DoFindVariable(t.image,false);cp.DoToString();cp.doRequestMemberByName(false);  }
+    | <DOLLAR> <LBBRACKET> Expr() <RBBRACKET> { cp.DoFindVariableByName(false);cp.DoToString();cp.doRequestMemberByName(false);  }
     | t = <MEMBERNAME> (
-        LOOKAHEAD( <LBRACKET> ) { cp.DoString(t.image);cp.DoRequestMember(true); }
-        | { cp.DoString(t.image);cp.DoRequestMember(false); }
+        LOOKAHEAD( <LBRACKET> ) { cp.doRequestMember(t.image,true); }
+        | { cp.doRequestMember(t.image,true); }
     )
 }
 void ForExpr()throws CompilationException:{}{
@@ -1105,11 +1105,11 @@ void ForExpr()throws CompilationException:{}{
 }
 void InternalFunctions()throws CompilationException:{}{
     <EMPTY> <LBRACKET> AtomicExpr() <RBRACKET> { cp.doIsEmpty(); }
-    | <INCLUDE> Expr() { cp.doIncludeOrEval(0); }
-    | <INCLUDE_ONCE> Expr() { cp.doIncludeOrEval(1); }
-    | <REQUIRE> Expr() { cp.doIncludeOrEval(2); }
-    | <REQUIRE_ONCE> Expr() { cp.doIncludeOrEval(3); }
-    | <EVAL> <LBRACKET> Expr() <RBRACKET> { cp.doIncludeOrEval(4); }
+    | <INCLUDE> Expr() { cp.doInclude(false,false); }
+    | <INCLUDE_ONCE> Expr() { cp.doInclude(true,false); }
+    | <REQUIRE> Expr() { cp.doInclude(false,true); }
+    | <REQUIRE_ONCE> Expr() { cp.doInclude(true,true); }
+    | <EVAL> <LBRACKET> Expr() <RBRACKET> { cp.doEval(); }
     | <ISSET> <LBRACKET> IsSetList() <RBRACKET>
 }
 void IsSetList() throws CompilationException:{}{

@@ -1,6 +1,5 @@
 package com.hadroncfy.jphp.jzend.compile;
 
-import com.hadroncfy.jphp.jzend.JZendVM;
 import com.hadroncfy.jphp.jzend.Context;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Function;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
@@ -42,10 +41,6 @@ public class ZendFunction implements Function {
         this.body = body;
     }
 
-    public int getStartLine(){
-        return body.opcodes.get(0).line;
-    }
-
     protected void dump_self(Dumper dumper) {
         dumper.ps.println(head.toString());
         body.dump_self(dumper);
@@ -54,13 +49,7 @@ public class ZendFunction implements Function {
     @Override
     public Zval call(Context env, Zval[] args) {
         //TODO:call a function
-        env.loadConsts(body.globalScope.constTable);
-        env.loadFunctions(body.functionTable);
-        env.enterScope();
-        JZendVM vm = new JZendVM(env,body);
-        vm.exec();
-        env.leaveScope();
-        return vm.getResult();
+        return null;
     }
 
     @Override

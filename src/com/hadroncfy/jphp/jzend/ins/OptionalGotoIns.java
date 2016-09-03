@@ -18,6 +18,10 @@ public class OptionalGotoIns implements Instruction {
         line2 = l2;
     }
 
+    public OptionalGotoIns(){
+
+    }
+
     @Override
     public void exec(VM vm) {
         Zval val = Tool.fullyDeRef(vm.pop());

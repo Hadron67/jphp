@@ -1,10 +1,9 @@
 package com.hadroncfy.jphp.jzend.compile;
 
-import com.hadroncfy.jphp.jzend.JZendVM;
 import com.hadroncfy.jphp.jzend.Program;
 import com.hadroncfy.jphp.jzend.Context;
-import com.hadroncfy.jphp.jzend.compile.ins.Instruction;
-import com.hadroncfy.jphp.jzend.compile.ins.NewFuncIns;
+import com.hadroncfy.jphp.jzend.ins.Instruction;
+import com.hadroncfy.jphp.jzend.ins.NewFunctionIns;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Callable;
 import com.hadroncfy.jphp.jzend.types.typeInterfaces.Zval;
 
@@ -128,8 +127,8 @@ public class Routine implements Callable,Program{
         ps.println("codes:");
         int line = 0;
         for(Instruction ins : opcodes){
-            if(ins instanceof NewFuncIns){
-                ((NewFuncIns) ins).index = dumper.addFunction(((NewFuncIns) ins).func);
+            if(ins instanceof NewFunctionIns){
+                ((NewFunctionIns) ins).index = dumper.addFunction(((NewFunctionIns) ins).func);
             }
             ps.println(new StringBuilder().append(line++).append("    ").append(ins.toString()));
         }
@@ -192,13 +191,8 @@ public class Routine implements Callable,Program{
 
     @Override
     public Zval call(Context env, Zval[] args) {
-        env.loadConsts(globalScope.constTable);
-        env.loadFunctions(functionTable);
-        env.enterScope();
-        JZendVM vm = new JZendVM(env,this);
-        vm.exec();
-        env.leaveScope();
-        return vm.getResult();
+        //TODO:call a routine
+        return null;
     }
 
     @Override
@@ -209,6 +203,10 @@ public class Routine implements Callable,Program{
     @Override
     public int getSize() {
         return opcodes.size();
+    }
+
+    protected void setIns(int index,Instruction newIns){
+        opcodes.set(index,newIns);
     }
 
     @Override

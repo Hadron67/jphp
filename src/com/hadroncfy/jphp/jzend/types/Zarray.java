@@ -94,6 +94,10 @@ public class Zarray implements Zval,Castable,Array,ArrayIterable,MapIterable {
         return ret;
     }
 
+    public TestableVal getTestVal(Zval key){
+        return new TestValImpl(key);
+    }
+
     private static String keyString(Zval key){
         if(key instanceof Zint){
             return "[" + ((Zint) key).value + "]";
@@ -244,6 +248,45 @@ public class Zarray implements Zval,Castable,Array,ArrayIterable,MapIterable {
         @Override
         public String getTypeName() {
             return "MapIterator";
+        }
+
+        @Override
+        public Zval clone() {
+            return null;
+        }
+    }
+
+    public class TestValImpl implements TestableVal{
+
+        private Zval key;
+
+        private TestValImpl(Zval key){
+            this.key = key;
+        }
+
+        @Override
+        public void unSet() {
+            vars.remove(key);
+        }
+
+        @Override
+        public boolean isSet() {
+            return vars.get(key) != null;
+        }
+
+        @Override
+        public boolean doTypeCheck(String typename) {
+            return false;
+        }
+
+        @Override
+        public String dump() {
+            return "ArrayTester (" + key + ")";
+        }
+
+        @Override
+        public String getTypeName() {
+            return "ArrayTester";
         }
 
         @Override

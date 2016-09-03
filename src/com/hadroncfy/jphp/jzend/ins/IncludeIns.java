@@ -16,6 +16,11 @@ public class IncludeIns implements Instruction {
     public boolean once;
     public boolean require;
 
+    public IncludeIns(boolean once,boolean req){
+        this.once = once;
+        require = req;
+    }
+
     @Override
     public void exec(VM vm) {
         Zval string = Tool.fullyDeRef(vm.pop());
